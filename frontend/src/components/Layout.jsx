@@ -9,9 +9,11 @@ import {
   ShieldUserIcon,
   UserCircleIcon,
 } from '@hugeicons/core-free-icons';
-import { forwardRef, Suspense } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import { forwardRef, Suspense, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
+import { API } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { QuickViewProvider } from '../context/QuickView';
 import Avatar from './Avatar';
@@ -66,9 +68,9 @@ function DesktopHeader() {
         itemStyle="text"
         hoverEffect="glide"
         indicator="pill"
-        highlightColor="#2a2c31"
-        highlightTextColor="#ecebe8"
-        textColor="#a1a3a8"
+        highlightColor="#1f1f22"
+        highlightTextColor="#f5f4f0"
+        textColor="#a3a4aa"
         collapse="never"
         intro={false}
         ariaLabel="Главное меню"
@@ -175,7 +177,7 @@ function MobileChrome() {
           panelHeight={60}
           showLabels
           showIndicators
-          accentColor="#ecebe8"
+          accentColor="#f5f4f0"
         />
       </div>
     </>
@@ -183,11 +185,21 @@ function MobileChrome() {
 }
 
 function Footer() {
+  // В публичном демо данные периодически сбрасываются — предупреждаем об этом в подвале
+  const [reset, setReset] = useState(0);
+  useEffect(() => {
+    API.health()
+      .then(h => setReset(h.demo_reset_minutes || 0))
+      .catch(() => {});
+  }, []);
   return (
     <footer className="site-footer">
       <div className="container">
         <div className="site-footer__inner">
-          <span>КиноДневник, учебный проект 2026. Постеры и описания: TMDB, ПоискКино, OMDb, Википедия, iTunes.</span>
+          <span>
+            КиноДневник, учебный проект 2026. Постеры и описания: TMDB, ПоискКино, OMDb, Википедия, iTunes.
+            {reset > 0 && ` Это демо: данные сбрасываются каждые ${reset} минут.`}
+          </span>
           <span className="site-footer__links">
             <Link to="/rules">Правила</Link>
             <a href="/docs" target="_blank" rel="noreferrer">
@@ -197,6 +209,22 @@ function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+// Смена страницы: новая проявляется и чуть поднимается — без задержки на «уход» старой
+function PageTransition({ children }) {
+  const { pathname } = useLocation();
+  const reduce = useReducedMotion();
+  return (
+    <motion.div
+      key={pathname}
+      initial={reduce ? false : { opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
   );
 }
 
@@ -210,7 +238,7 @@ export default function Layout() {
         <i />
       </div>
       {/* Искры при клике — короткий отклик на любое нажатие */}
-      <ClickSpark sparkColor={['#f5c518', '#ecebe8']} sparkSize={9} sparkRadius={20} sparkCount={8} duration={420}>
+      <ClickSpark sparkColor={['#ffc61a', '#f5f4f0']} sparkSize={9} sparkRadius={20} sparkCount={8} duration={420}>
         <div className="app-shell">
           <header className="site-header">
             <DesktopHeader />
@@ -219,7 +247,9 @@ export default function Layout() {
           <main className="site-main">
             {/* Пока загружается код страницы, шапка и фон остаются на месте */}
             <Suspense fallback={<Loader />}>
-              <Outlet />
+              <PageTransition>
+                <Outlet />
+              </PageTransition>
             </Suspense>
           </main>
           <Footer />

@@ -17,7 +17,8 @@ def admin_stats(_: User = Depends(require_admin), db: Session = Depends(get_db))
     count = lambda model: db.scalar(select(func.count()).select_from(model))  # noqa: E731
     return AdminStatsOut(
         users=count(User), movies=count(Movie), entries=count(UserMovie),
-        searches=count(SearchHistory), deleted=count(DeletedUserLog), cache_items=count(ApiCache),
+        searches=count(SearchHistory), deleted=count(DeletedUserLog),
+        cache_items=db.scalar(select(func.count()).select_from(ApiCache).where(ApiCache.provider != "app")),
     )
 
 
@@ -66,7 +67,7 @@ def deleted_log(_: User = Depends(require_admin), db: Session = Depends(get_db))
 
 @router.delete("/cache", status_code=status.HTTP_200_OK)
 def clear_cache(_: User = Depends(require_admin), db: Session = Depends(get_db)):
-    removed = db.execute(delete(ApiCache)).rowcount
+    removed = db.execute(delete(ApiCache).where(ApiCache.provider != "app")).rowcount  # служебные записи остаются
     db.commit()
     return {"removed": removed}
 

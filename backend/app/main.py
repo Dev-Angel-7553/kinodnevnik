@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from .config import BASE_DIR, settings
 from .routers import admin, auth, library, movies, posters, stats, users
 from .seed import init_db
+from .services.demo_reset import maybe_reset
 from .services.enrich import enrich_in_background
 
 FRONTEND_DIST = BASE_DIR.parent / "frontend" / "dist"
@@ -57,6 +58,14 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def demo_reset(request: Request, call_next):
+    """Публичное демо: база сбрасывается к исходным данным каждые DEMO_RESET_MINUTES минут."""
+    if request.url.path.startswith("/api/"):
+        maybe_reset()
+    return await call_next(request)
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_handler(_request: Request, exc: RequestValidationError):
     """Превращает ошибки Pydantic в словарь «поле → сообщение» для формы на клиенте."""
@@ -96,7 +105,7 @@ def docs():
 
 @app.get("/api/health", tags=["Служебное"])
 def health():
-    return {"status": "ok", "app": settings.app_name}
+    return {"status": "ok", "app": settings.app_name, "demo_reset_minutes": settings.demo_reset_minutes}
 
 
 # Собранный клиент (npm run build) раздаётся тем же сервером

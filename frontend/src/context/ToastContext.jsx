@@ -3,7 +3,7 @@ import SwipeToast from '../components/reactbits/SwipeToast/SwipeToast';
 
 const ToastContext = createContext(() => {});
 
-const FUSE = { success: '#46c181', error: '#ef4f5f', info: '#6aa3f8' };
+const FUSE = { success: '#2fd479', error: '#ff4757', info: '#4f9bff' };
 
 // Всплывающие уведомления на основе компонента SwipeToast из React Bits
 export function ToastProvider({ children }) {
@@ -27,8 +27,8 @@ export function ToastProvider({ children }) {
             inline
             title={t.title}
             description={t.description}
-            background="#202226"
-            color="#ecebe8"
+            background="#151517"
+            color="#f5f4f0"
             fuseColor={FUSE[t.tone]}
             duration={3600}
             radius={10}

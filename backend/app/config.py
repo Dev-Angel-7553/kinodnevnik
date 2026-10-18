@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     itunes_country: str = "us"    # витрина iTunes Search API (ключ не нужен)
 
     poster_cache_dir: Path | None = None  # по умолчанию static/posters/cache; на Vercel — /tmp
+    # Сброс демо-базы каждые N минут (0 — выключен; в публичном демо на Vercel — 30)
+    demo_reset_minutes: int = 0
 
     http_timeout: float = 8.0
     cache_ttl_hours: int = 24

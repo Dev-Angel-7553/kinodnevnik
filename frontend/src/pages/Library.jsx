@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { API } from '../api/client';
+import { useAmbient } from '../posterPalette';
 import Loader from '../components/Loader';
 import MovieCard from '../components/MovieCard';
 import FadeContent from '../components/reactbits/FadeContent/FadeContent';
@@ -50,11 +51,14 @@ export default function Library() {
     return [{ value: '', label: 'Все жанры' }, ...[...set].sort().map(g => ({ value: g, label: g }))];
   }, [all]);
 
+  // Фон дневника подсвечивается постером первого фильма в выбранной вкладке
   const visible = (all || []).filter(e => {
     if (tab === 'favorite' && !e.is_favorite) return false;
     if (tab !== 'all' && tab !== 'favorite' && e.status !== tab) return false;
     return !query || e.movie.title.toLowerCase().includes(query.toLowerCase());
   });
+
+  useAmbient(visible[0]?.movie.poster_url);
 
   return (
     <div className="container page">
@@ -80,10 +84,10 @@ export default function Library() {
           }))}
           value={tab}
           onChange={setTab}
-          trackColor="#18191c"
-          thumbColor="#ecebe8"
-          textColor="#a1a3a8"
-          activeTextColor="#111214"
+          trackColor="#0b0b0c"
+          thumbColor="#f5f4f0"
+          textColor="#a3a4aa"
+          activeTextColor="#000000"
           size="lg"
           radius={10}
           equalSlots={false}

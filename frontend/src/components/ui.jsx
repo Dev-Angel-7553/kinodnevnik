@@ -63,9 +63,9 @@ export function Notice({ tone = 'info', children }) {
 
 // Общие настройки выпадающих списков GlideSelect под графитовую тему
 export const SELECT_THEME = {
-  accentColor: '#ecebe8',
-  surfaceColor: '#202226',
-  highlightColor: '#2a2c31',
-  textColor: '#ecebe8',
+  accentColor: '#f5f4f0',
+  surfaceColor: '#151517',
+  highlightColor: '#1f1f22',
+  textColor: '#f5f4f0',
   showTags: false,
 };

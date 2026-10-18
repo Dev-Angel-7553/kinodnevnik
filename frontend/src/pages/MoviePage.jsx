@@ -40,10 +40,10 @@ function WatchTicket({ movie, addedAt, onTear }) {
         rotate={-1.5}
         tiltMax={5}
         parallax={3}
-        background="#202226"
-        stubBackground="#26282d"
-        color="#ecebe8"
-        borderColor="#33353b"
+        background="#151517"
+        stubBackground="#1c1c1f"
+        color="#f5f4f0"
+        borderColor="#2c2c30"
         onTear={onTear}
         ariaLabel={`Оторвать корешок: отметить «${movie.title}» просмотренным`}
         stub={
@@ -207,6 +207,8 @@ export default function MoviePage() {
     <div className="container page movie-page" style={posterColor ? { '--movie-accent': posterColor } : undefined}>
       <div className="movie-hero">
         <div className="movie-hero__poster">
+          {/* Свет постера на чёрном фоне — как подсветка экрана */}
+          {movie.poster_url && posterOk && <img className="hero-glow" src={movie.poster_url} alt="" aria-hidden="true" />}
           {movie.poster_url && posterOk !== false ? (
             <TiltedCard
               imageSrc={movie.poster_url}
@@ -297,10 +299,10 @@ export default function MoviePage() {
               items={Object.entries(STATUSES).map(([value, s]) => ({ value, label: s.label }))}
               value={form.status}
               onChange={value => set('status', value)}
-              trackColor="#202226"
+              trackColor="#151517"
               thumbColor={STATUSES[form.status].color}
-              textColor="#a1a3a8"
-              activeTextColor="#111214"
+              textColor="#a3a4aa"
+              activeTextColor="#000000"
               size="lg"
               radius={10}
               aria-label="Статус"
@@ -316,9 +318,9 @@ export default function MoviePage() {
                     count={10}
                     size={24}
                     labels={RATING_LABELS}
-                    activeColor="#f5c518"
+                    activeColor="#ffc61a"
                     idleColor="rgba(255,255,255,0.18)"
-                    tipColor="#2a2c31"
+                    tipColor="#1f1f22"
                     ariaLabel="Оценка фильма"
                   />
                 </div>
@@ -340,8 +342,8 @@ export default function MoviePage() {
                     onChange={value => set('is_favorite', value)}
                     showCount={false}
                     size={38}
-                    pillColor="#24262b"
-                    likedColor="#ef4f5f"
+                    pillColor="#19191c"
+                    likedColor="#ff4757"
                   />
                 </div>
               </div>
@@ -367,9 +369,9 @@ export default function MoviePage() {
                   className="hold-danger"
                   holdTime={1100}
                   backgroundColor="transparent"
-                  fillColor="#ef4f5f"
-                  textColor="#ef4f5f"
-                  fillTextColor="#111214"
+                  fillColor="#ff4757"
+                  textColor="#ff4757"
+                  fillTextColor="#000000"
                   radius={8}
                   glow={false}
                   doneLabel="Удалено"

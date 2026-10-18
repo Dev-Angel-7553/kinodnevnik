@@ -98,7 +98,7 @@ export default function Admin() {
       <div className="admin-tiles">
         {tiles.map(([label, value]) => (
           <div key={label} className="admin-tile">
-            <Counter value={value} fontSize={34} fontWeight={650} locale="ru-RU" textColor="#ecebe8" />
+            <Counter value={value} fontSize={34} fontWeight={650} locale="ru-RU" textColor="#f5f4f0" />
             <span>{label}</span>
           </div>
         ))}
@@ -217,10 +217,10 @@ export default function Admin() {
               <HoldButton
                 className="hold-danger"
                 holdTime={1300}
-                backgroundColor="#2a1d20"
-                fillColor="#ef4f5f"
-                textColor="#f3a6ae"
-                fillTextColor="#111214"
+                backgroundColor="#1e0d10"
+                fillColor="#ff4757"
+                textColor="#ff9aa5"
+                fillTextColor="#000000"
                 radius={8}
                 glow={false}
                 doneLabel="Удалено"

@@ -284,3 +284,23 @@ def test_admin_cannot_delete_self(client):
     h = auth(client, "admin", "admin2026")
     r = client.request("DELETE", "/api/admin/users/1", json={"reason": "проверка"}, headers=h)
     assert r.status_code == 400
+
+
+# ---------- Сброс демо-базы ----------
+
+def test_demo_reset_every_n_minutes(client, monkeypatch):
+    from app.services import demo_reset
+
+    monkeypatch.setattr(settings, "demo_reset_minutes", 30)
+    client.post("/api/auth/register", json={
+        "last_name": "Временный", "first_name": "Гость", "login": "temp_guest",
+        "email": "temp@example.ru", "password": "secret123", "password_confirm": "secret123"})
+    assert demo_reset.maybe_reset(force_check=True) is False  # 30 минут ещё не прошло
+    with SessionLocal() as db:  # «перематываем» время заполнения на 31 минуту назад
+        row = db.scalar(select(demo_reset.ApiCache).where(demo_reset.ApiCache.cache_key == demo_reset.KEY))
+        row.payload = str(float(row.payload) - 31 * 60)
+        db.commit()
+    assert demo_reset.maybe_reset(force_check=True) is True
+    assert client.post("/api/auth/login", json={"login": "temp_guest", "password": "secret123"}).status_code == 401
+    assert client.post("/api/auth/login", json={"login": "demo", "password": "demo2026"}).status_code == 200
+    assert client.get("/api/health").json()["demo_reset_minutes"] == 30

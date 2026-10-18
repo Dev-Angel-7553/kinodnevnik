@@ -1,9 +1,9 @@
 // Общие справочники и функции форматирования
 
 export const STATUSES = {
-  watched: { label: 'Просмотрен', short: 'Смотрел', color: '#46c181' },
-  planned: { label: 'Буду смотреть', short: 'В планах', color: '#6aa3f8' },
-  dropped: { label: 'Брошен', short: 'Брошен', color: '#8f9298' },
+  watched: { label: 'Просмотрен', short: 'Смотрел', color: '#2fd479' },
+  planned: { label: 'Буду смотреть', short: 'В планах', color: '#4f9bff' },
+  dropped: { label: 'Брошен', short: 'Брошен', color: '#8e9096' },
 };
 
 export const SOURCES = {

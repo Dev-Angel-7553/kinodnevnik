@@ -10,19 +10,19 @@ import { EmptyState, PageHeader } from '../components/ui';
 import { formatDate, plural } from '../utils';
 
 // Графики в нейтральной гамме: цветом выделено только то, что относится к оценкам
-const AXIS = { stroke: '#6e7177', fontSize: 12, tickLine: false, axisLine: false };
-const GRID = <CartesianGrid vertical={false} stroke="#26282d" />;
+const AXIS = { stroke: '#6b6c72', fontSize: 12, tickLine: false, axisLine: false };
+const GRID = <CartesianGrid vertical={false} stroke="#1c1c1f" />;
 const TOOLTIP = {
-  contentStyle: { background: '#202226', border: '1px solid #34373d', borderRadius: 8, color: '#ecebe8' },
+  contentStyle: { background: '#151517', border: '1px solid #2c2c30', borderRadius: 8, color: '#f5f4f0' },
   cursor: { fill: 'rgba(255,255,255,.05)' },
-  labelStyle: { color: '#a1a3a8' },
+  labelStyle: { color: '#a3a4aa' },
 };
 
 function StatTile({ value, decimals, label }) {
   return (
     <div className="stat-tile">
       <span className="stat-tile__label">{label}</span>
-      <Counter value={value} decimals={decimals} fontSize={44} fontWeight={650} locale="ru-RU" textColor="#ecebe8" />
+      <Counter value={value} decimals={decimals} fontSize={44} fontWeight={650} locale="ru-RU" textColor="#f5f4f0" />
     </div>
   );
 }
@@ -78,7 +78,7 @@ export default function Stats() {
               <XAxis dataKey="label" {...AXIS} />
               <YAxis allowDecimals={false} {...AXIS} />
               <Tooltip {...TOOLTIP} formatter={v => [v, 'фильмов']} />
-              <Bar dataKey="value" fill="#d9d8d4" radius={[4, 4, 0, 0]} maxBarSize={34} />
+              <Bar dataKey="value" fill="#e4e3df" radius={[4, 4, 0, 0]} maxBarSize={34} />
             </BarChart>
           </ResponsiveContainer>
         </ChartPanel>
@@ -87,11 +87,11 @@ export default function Stats() {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={stats.by_genre} layout="vertical" margin={{ top: 0, right: 12, left: 8, bottom: 0 }}>
               <XAxis type="number" hide allowDecimals={false} />
-              <YAxis type="category" dataKey="label" width={96} {...AXIS} stroke="#a1a3a8" />
+              <YAxis type="category" dataKey="label" width={96} {...AXIS} stroke="#a3a4aa" />
               <Tooltip {...TOOLTIP} formatter={v => [v, 'фильмов']} />
               <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={16}>
                 {stats.by_genre.map((g, i) => (
-                  <Cell key={g.label} fill={i === 0 ? '#ecebe8' : '#4a4d54'} />
+                  <Cell key={g.label} fill={i === 0 ? '#f5f4f0' : '#45464c'} />
                 ))}
               </Bar>
             </BarChart>
@@ -105,7 +105,7 @@ export default function Stats() {
               <XAxis dataKey="label" {...AXIS} />
               <YAxis allowDecimals={false} {...AXIS} />
               <Tooltip {...TOOLTIP} labelFormatter={l => `Оценка ${l}`} formatter={v => [v, 'фильмов']} />
-              <Bar dataKey="value" fill="#f5c518" radius={[4, 4, 0, 0]} maxBarSize={26} />
+              <Bar dataKey="value" fill="#ffc61a" radius={[4, 4, 0, 0]} maxBarSize={26} />
             </BarChart>
           </ResponsiveContainer>
         </ChartPanel>
@@ -117,7 +117,7 @@ export default function Stats() {
               <XAxis dataKey="label" {...AXIS} />
               <YAxis allowDecimals={false} {...AXIS} />
               <Tooltip {...TOOLTIP} formatter={v => [v, 'фильмов']} />
-              <Bar dataKey="value" fill="#8f9298" radius={[4, 4, 0, 0]} maxBarSize={40} />
+              <Bar dataKey="value" fill="#8e9096" radius={[4, 4, 0, 0]} maxBarSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </ChartPanel>

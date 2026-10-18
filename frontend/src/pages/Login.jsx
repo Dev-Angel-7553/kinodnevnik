@@ -60,9 +60,9 @@ export function AuthScene({ width = 420, children }) {
             speed={18}
             parallax={0.3}
             lift={0}
-            dim={0.35}
+            dim={0.22}
             fade={0.5}
-            overlayColor="#111214"
+            overlayColor="#000000"
           />
         )}
         <p className="auth-wall__caption">Все постеры — из каталога КиноДневника.</p>

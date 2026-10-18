@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import { setAmbient } from './ambient';
+
 // Цвета постера: акцент для кнопок и три приглушённых цвета для фона страницы.
 // Постеры приходят с того же адреса, что и приложение (кэш сервера), поэтому их пиксели можно прочитать.
 
@@ -64,10 +66,11 @@ function analyse(img) {
       if (picked.length < 3 && picked.every(p => Math.min(Math.abs(p.i - b.i), 12 - Math.abs(p.i - b.i)) >= 2)) picked.push(b);
     });
 
-  // Приглушаем: фон должен оставаться тёмным и не спорить с текстом
-  const ambient = picked.map(b => hsl(b.h / b.w, Math.min(0.55, (b.s / b.w) * 0.8), 0.3));
-  // Чёрно-белому или однотонному постеру — нейтральные холодные тона
-  const neutrals = ['hsl(220 10% 24%)', 'hsl(210 8% 18%)', 'hsl(230 12% 22%)'];
+  // Свет постера на чёрном экране: насыщенные цвета средней яркости — на OLED-чёрном они «светятся»,
+  // а прозрачность пятен в CSS не даёт им спорить с текстом
+  const ambient = picked.map(b => hsl(b.h / b.w, Math.min(0.9, Math.max(0.5, (b.s / b.w) * 1.15)), 0.45));
+  // Чёрно-белому или однотонному постеру — холодный серебристый свет
+  const neutrals = ['hsl(215 14% 40%)', 'hsl(220 10% 30%)', 'hsl(210 12% 36%)'];
   while (ambient.length < 3) ambient.push(ambient.length ? ambient[0] : neutrals[ambient.length]);
 
   const lift = c => Math.round(c + (255 - c) * 0.25);
@@ -109,4 +112,29 @@ export default function usePosterPalette(src) {
     };
   }, [src]);
   return palette;
+}
+
+// Подсветка фона страницы цветами постера (пока страница открыта)
+export function useAmbient(src) {
+  useEffect(() => {
+    if (!src) return undefined;
+    let restore = null;
+    let alive = true;
+    loadPalette(src).then(p => {
+      if (alive && p) restore = setAmbient(p.ambient);
+    });
+    return () => {
+      alive = false;
+      restore?.();
+    };
+  }, [src]);
+}
+
+// Цвет свечения карточки при наведении: берётся из её постера при первом наведении
+export function glowOnHover(src) {
+  return e => {
+    const el = e.currentTarget;
+    if (!src || el.style.getPropertyValue('--glow')) return;
+    loadPalette(src).then(p => p && el.style.setProperty('--glow', p.ambient[0]));
+  };
 }

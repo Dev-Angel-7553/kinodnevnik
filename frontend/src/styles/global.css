@@ -6,24 +6,24 @@
    ========================================================================== */
 
 :root {
-  --bg: #111214;            /* фон зала */
-  --surface: #18191c;       /* панели и карточки */
-  --surface-2: #202226;     /* поля ввода, наведение */
-  --surface-3: #2a2c31;     /* активные элементы */
-  --line: #26282d;          /* тонкие разделители */
-  --line-strong: #363940;
+  --bg: #000000;            /* фон зала */
+  --surface: #0b0b0c;       /* панели и карточки */
+  --surface-2: #151517;     /* поля ввода, наведение */
+  --surface-3: #1f1f22;     /* активные элементы */
+  --line: #1c1c1f;          /* тонкие разделители */
+  --line-strong: #2c2c30;
 
-  --text: #ecebe8;          /* «экранный» белый */
-  --muted: #a1a3a8;
-  --faint: #6e7177;
+  --text: #f5f4f0;          /* «экранный» белый */
+  --muted: #a3a4aa;
+  --faint: #6b6c72;
 
-  --primary: #ecebe8;       /* главная кнопка — светлая, как экран */
-  --primary-ink: #111214;
-  --star: #f5c518;          /* только оценки */
-  --watched: #46c181;
-  --planned: #6aa3f8;
-  --dropped: #8f9298;
-  --heart: #ef4f5f;         /* избранное, удаление, ошибки */
+  --primary: #f5f4f0;       /* главная кнопка — светлая, как экран */
+  --primary-ink: #000000;
+  --star: #ffc61a;          /* только оценки */
+  --watched: #2fd479;
+  --planned: #4f9bff;
+  --dropped: #8e9096;
+  --heart: #ff4757;         /* избранное, удаление, ошибки */
 
   --r-panel: 12px;
   --r-control: 8px;
@@ -38,24 +38,24 @@
   color-scheme: dark;
 }
 
-/* Цвета фона-«атмосферы»: по умолчанию приглушённые красный, зелёный и синий,
-   на странице фильма — из его постера. @property позволяет плавно менять их */
+/* Цвета подсветки фона: по умолчанию её нет — чистый чёрный, как выключенный OLED-экран.
+   Главная, дневник, страница и мини-окно фильма подставляют цвета постера; @property плавно их меняет */
 @property --amb-1 {
   syntax: '<color>';
   inherits: true;
-  initial-value: hsl(352 34% 30%);
+  initial-value: hsl(0 0% 0% / 0);
 }
 
 @property --amb-2 {
   syntax: '<color>';
   inherits: true;
-  initial-value: hsl(160 30% 25%);
+  initial-value: hsl(0 0% 0% / 0);
 }
 
 @property --amb-3 {
   syntax: '<color>';
   inherits: true;
-  initial-value: hsl(216 38% 32%);
+  initial-value: hsl(0 0% 0% / 0);
 }
 
 :root {
@@ -127,7 +127,7 @@ button {
 }
 
 ::selection {
-  background: rgba(236, 235, 232, 0.25);
+  background: rgba(245, 244, 240, 0.25);
 }
 
 .muted {
@@ -171,7 +171,7 @@ button {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(17, 18, 20, 0.96);
+  background: rgba(0, 0, 0, 0.96);
   border-bottom: 1px solid var(--line);
 }
 
@@ -289,11 +289,16 @@ button {
   font-size: 15px;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
 }
 
 .btn:hover {
   background: var(--surface-2);
+}
+
+/* Отклик на нажатие: кнопка чуть «проседает» */
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .btn:disabled {
@@ -341,12 +346,12 @@ button {
 }
 
 .btn-danger-ghost {
-  border-color: rgba(239, 79, 95, 0.4);
-  color: #ff8a95;
+  border-color: rgba(255, 71, 87, 0.4);
+  color: #ff8f9a;
 }
 
 .btn-danger-ghost:hover {
-  background: rgba(239, 79, 95, 0.12);
+  background: rgba(255, 71, 87, 0.12);
 }
 
 .icon-btn {
@@ -420,7 +425,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
 }
 
 .field__error {
-  color: #ff8a95;
+  color: #ff8f9a;
   font-size: 12.5px;
 }
 
@@ -674,7 +679,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
   place-items: center;
   border-radius: 50%;
   background: var(--avatar);
-  color: #111214;
+  color: #000000;
   font-weight: 650;
   letter-spacing: -0.02em;
 }
@@ -793,11 +798,15 @@ input[type='date']::-webkit-calendar-picker-indicator {
   overflow: hidden;
   border-radius: var(--r-poster);
   box-shadow: var(--poster-shadow);
-  transition: transform 0.2s ease;
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.35s ease;
 }
 
+/* При наведении постер приподнимается и «светит» своим цветом на чёрный фон */
 .movie-card:hover .movie-card__poster {
-  transform: translateY(-3px);
+  transform: translateY(-5px) scale(1.015);
+  box-shadow: 0 24px 54px -16px var(--glow, rgba(255, 255, 255, 0.14));
 }
 
 .movie-card:hover .movie-card__title {
@@ -821,7 +830,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
   gap: 5px;
   padding: 3px 8px;
   border-radius: 6px;
-  background: rgba(17, 18, 20, 0.86);
+  background: rgba(0, 0, 0, 0.86);
   color: var(--text);
   font-size: 12px;
   font-weight: 550;
@@ -871,7 +880,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(17, 18, 20, 0.75);
+  background: rgba(0, 0, 0, 0.75);
   font-size: 14px;
 }
 
@@ -1007,7 +1016,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
   margin-top: 10px;
   padding-top: 12px;
   border-top: 1px dashed var(--line-strong);
-  color: rgba(236, 235, 232, 0.85);
+  color: rgba(245, 244, 240, 0.85);
   font-size: 14.5px;
   line-height: 1.5;
 }
@@ -1198,7 +1207,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
 .movie-overview {
   max-width: 680px;
   margin-top: 24px;
-  color: rgba(236, 235, 232, 0.88);
+  color: rgba(245, 244, 240, 0.88);
   font-size: 17px;
   line-height: 1.7;
 }
@@ -1317,7 +1326,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
 
 .review p {
   margin-top: 6px;
-  color: rgba(236, 235, 232, 0.88);
+  color: rgba(245, 244, 240, 0.88);
 }
 
 /* ---------- Дневник ---------- */
@@ -1693,7 +1702,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
 .rules-card ul {
   margin: 0;
   padding-left: 20px;
-  color: rgba(236, 235, 232, 0.88);
+  color: rgba(245, 244, 240, 0.88);
 }
 
 .rules-card li + li {
@@ -1705,7 +1714,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
 }
 
 .rules-card--no h2 {
-  color: #ff8a95;
+  color: #ff8f9a;
 }
 
 .panel p + h2 {
@@ -1713,7 +1722,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
 }
 
 .panel p {
-  color: rgba(236, 235, 232, 0.88);
+  color: rgba(245, 244, 240, 0.88);
 }
 
 .not-found {
@@ -2212,7 +2221,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
 .hold-danger.hold-button {
   height: 42px;
   padding: 0 18px;
-  border: 1px solid rgba(239, 79, 95, 0.4);
+  border: 1px solid rgba(255, 71, 87, 0.4);
   font-size: 15px;
   font-weight: 550;
 }
@@ -2450,5 +2459,107 @@ input[type='date']::-webkit-calendar-picker-indicator {
 
   .qv__overview {
     -webkit-line-clamp: 5;
+  }
+}
+
+/* ---------- Появление сеток на главной: карточки поднимаются по очереди ---------- */
+.movie-grid--stagger > * {
+  animation: card-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(min(var(--i, 0), 10) * 55ms + 80ms);
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+/* ---------- Свет постера на чёрном фоне (как подсветка OLED-экрана) ---------- */
+.movie-hero__poster {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero-glow {
+  position: absolute;
+  top: 2%;
+  left: -4%;
+  z-index: -1;
+  width: 108%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(64px) saturate(1.8) brightness(1.15);
+  opacity: 0;
+  animation: glow-in 1.2s 0.2s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes glow-in {
+  to {
+    opacity: 0.7;
+  }
+}
+
+.qv__poster {
+  position: relative;
+  isolation: isolate;
+  transform-origin: 0 0;
+}
+
+.qv__glow {
+  position: absolute;
+  inset: 5%;
+  z-index: -1;
+  width: 90%;
+  height: 90%;
+  object-fit: cover;
+  filter: blur(40px) saturate(1.7);
+  opacity: 0;
+  animation: glow-in 0.9s 0.35s ease forwards;
+  pointer-events: none;
+}
+
+/* Пока постер летит из карточки или обратно, окно не обрезает его и не закрывает фоном */
+.qv--flying .qv__panel,
+.qv--closing .qv__panel {
+  overflow: visible;
+}
+
+.qv--flying .qv__panel {
+  animation: qv-panel-in 0.45s ease both;
+}
+
+.qv--closing .qv__panel {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.qv--closing .qv__glow {
+  animation: none;
+  opacity: 0;
+}
+
+.qv--closing .qv__close {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+@keyframes qv-panel-in {
+  from {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .movie-grid--stagger > * {
+    animation: none;
   }
 }

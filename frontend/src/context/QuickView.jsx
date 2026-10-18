@@ -1,5 +1,5 @@
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { animate, AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -11,22 +11,47 @@ import { formatRuntime, STATUSES } from '../utils';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 
-// Мини-окно фильма: по клику на карточку фон размывается и выплывает краткая карточка фильма —
-// постер, факты, рейтинги, описание и быстрые действия. Полная страница — по кнопке «Открыть фильм».
+// Мини-окно фильма: по клику на карточку фон размывается, постер «вылетает» из карточки
+// и становится частью окна с фактами, рейтингами и описанием; при закрытии улетает обратно.
 
 const QuickViewContext = createContext(null);
 
 export const useQuickView = () => useContext(QuickViewContext);
 
 const one = v => Number(v).toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const SPRING = { type: 'spring', stiffness: 230, damping: 27, mass: 0.9 };
 
-function QuickViewPanel({ movie: initial, onClose }) {
+// Смещение и масштаб, которые переносят элемент «to» на место элемента «from»
+function delta(from, to) {
+  const a = from.getBoundingClientRect();
+  const b = to.getBoundingClientRect();
+  return { x: a.left - b.left, y: a.top - b.top, scale: a.width / b.width };
+}
+
+function visible(el) {
+  if (!el?.isConnected) return false;
+  const r = el.getBoundingClientRect();
+  return r.width > 0 && r.bottom > 0 && r.top < window.innerHeight;
+}
+
+function QuickViewPanel({ movie: initial, from, onClosed }) {
   const { user } = useAuth();
   const notify = useToast();
   const reduce = useReducedMotion();
   const [movie, setMovie] = useState(initial);
   const [saving, setSaving] = useState(false);
+  const [phase, setPhase] = useState(from && !reduce ? 'flying' : 'open'); // flying → open → closing
+  const posterRef = useRef(null);
   const closeRef = useRef(null);
+  const flies = Boolean(from) && !reduce;
+
+  // Полёт постера из карточки в окно (FLIP: начинаем на месте карточки и пружиной едем на своё)
+  useLayoutEffect(() => {
+    if (!flies || !posterRef.current) return;
+    const d = delta(from, posterRef.current);
+    from.style.visibility = 'hidden'; // в карточке постера «нет» — он в окне
+    animate(posterRef.current, { x: [d.x, 0], y: [d.y, 0], scale: [d.scale, 1] }, SPRING).then(() => setPhase('open'));
+  }, [flies, from]);
 
   // Полные сведения (оценка зрителей, моя запись) догружаются, пока окно уже открыто
   useEffect(() => {
@@ -39,7 +64,7 @@ function QuickViewPanel({ movie: initial, onClose }) {
     };
   }, [initial.id]);
 
-  // Фон страницы перекрашивается в цвета постера, пока окно открыто
+  // Фон страницы подсвечивается цветами постера, пока окно открыто
   useEffect(() => {
     let restore = null;
     let alive = true;
@@ -52,19 +77,36 @@ function QuickViewPanel({ movie: initial, onClose }) {
     };
   }, [initial.poster_url]);
 
+  const close = useCallback(async () => {
+    if (phase === 'closing') return;
+    setPhase('closing');
+    if (flies && visible(from) && posterRef.current) {
+      const d = delta(from, posterRef.current);
+      await animate(posterRef.current, { x: d.x, y: d.y, scale: d.scale }, { duration: 0.38, ease: [0.4, 0, 0.2, 1] });
+    } else {
+      await new Promise(r => setTimeout(r, 180));
+    }
+    if (from) from.style.visibility = '';
+    onClosed();
+  }, [phase, flies, from, onClosed]);
+
   useEffect(() => {
     const previous = document.activeElement;
     closeRef.current?.focus({ preventScroll: true });
-    const onKey = e => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
-      window.removeEventListener('keydown', onKey);
       document.body.style.overflow = overflow;
+      if (from) from.style.visibility = '';
       previous?.focus?.({ preventScroll: true });
     };
-  }, [onClose]);
+  }, [from]);
+
+  useEffect(() => {
+    const onKey = e => e.key === 'Escape' && close();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [close]);
 
   const plan = async () => {
     setSaving(true);
@@ -87,36 +129,35 @@ function QuickViewPanel({ movie: initial, onClose }) {
     ['Зрители КиноДневника', movie.community_rating],
   ].filter(([, v]) => v);
   const entry = movie.my_entry;
-  const rise = reduce ? {} : { initial: { opacity: 0, y: 28, scale: 0.97 }, animate: { opacity: 1, y: 0, scale: 1 } };
 
   return (
-    <div className="qv" role="dialog" aria-modal="true" aria-labelledby="qv-title">
+    <div className={`qv qv--${phase}`} role="dialog" aria-modal="true" aria-labelledby="qv-title">
       <motion.div
         className="qv__backdrop"
-        onClick={onClose}
+        onClick={close}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.25 }}
+        animate={{ opacity: phase === 'closing' ? 0 : 1 }}
+        transition={{ duration: phase === 'closing' ? 0.3 : 0.35 }}
       />
       <motion.article
         className="qv__panel"
-        {...rise}
-        exit={reduce ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+        initial={flies ? false : reduce ? { opacity: 0 } : { opacity: 0, y: 28, scale: 0.97 }}
+        animate={phase === 'closing' && !flies ? { opacity: 0, y: 12 } : { opacity: 1, y: 0, scale: 1 }}
+        transition={SPRING}
       >
-        <button ref={closeRef} type="button" className="qv__close icon-btn" onClick={onClose} aria-label="Закрыть">
+        <button ref={closeRef} type="button" className="qv__close icon-btn" onClick={close} aria-label="Закрыть">
           ×
         </button>
-        <motion.div
-          className="qv__poster"
-          initial={reduce ? false : { opacity: 0, x: -18 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        >
+        <div className="qv__poster" ref={posterRef}>
+          {movie.poster_url && <img className="qv__glow" src={movie.poster_url} alt="" aria-hidden="true" />}
           <Poster src={movie.poster_url} title={movie.title} year={movie.year} />
-        </motion.div>
-        <div className="qv__info">
+        </div>
+        <motion.div
+          className="qv__info"
+          initial={reduce ? false : { opacity: 0, x: 22 }}
+          animate={phase === 'closing' ? { opacity: 0, x: 12 } : { opacity: 1, x: 0 }}
+          transition={{ duration: phase === 'closing' ? 0.18 : 0.45, delay: phase === 'closing' ? 0 : 0.12, ease: [0.22, 1, 0.36, 1] }}
+        >
           <h2 id="qv-title" className="qv__title">
             {movie.title}
           </h2>
@@ -146,7 +187,7 @@ function QuickViewPanel({ movie: initial, onClose }) {
           )}
           {movie.overview && <p className="qv__overview">{movie.overview}</p>}
           <div className="qv__actions">
-            <Link to={`/movie/${movie.id}`} className="btn btn-accent" onClick={onClose}>
+            <Link to={`/movie/${movie.id}`} className="btn btn-accent">
               Открыть фильм
             </Link>
             {user && !entry && (
@@ -161,38 +202,41 @@ function QuickViewPanel({ movie: initial, onClose }) {
               </span>
             )}
           </div>
-        </div>
+        </motion.div>
       </motion.article>
     </div>
   );
 }
 
 export function QuickViewProvider({ children }) {
-  const [movie, setMovie] = useState(null);
+  const [state, setState] = useState(null);
   const { pathname } = useLocation();
-  const open = useCallback(m => setMovie(m), []);
-  const close = useCallback(() => setMovie(null), []);
+  const open = useCallback((movie, from = null) => setState({ movie, from }), []);
+  const closed = useCallback(() => setState(null), []);
 
-  useEffect(() => setMovie(null), [pathname]); // переход на другую страницу закрывает окно
+  useEffect(() => setState(null), [pathname]); // переход на другую страницу закрывает окно сразу
 
-  const value = useMemo(() => ({ open, close }), [open, close]);
+  const value = useMemo(() => ({ open }), [open]);
   return (
     <QuickViewContext.Provider value={value}>
       {children}
       {createPortal(
-        <AnimatePresence>{movie && <QuickViewPanel key={movie.id} movie={movie} onClose={close} />}</AnimatePresence>,
+        <AnimatePresence>
+          {state && <QuickViewPanel key={state.movie.id} movie={state.movie} from={state.from} onClosed={closed} />}
+        </AnimatePresence>,
         document.body
       )}
     </QuickViewContext.Provider>
   );
 }
 
-// Обработчик клика по ссылке на фильм: обычный клик открывает мини-окно,
-// а клик с Ctrl/Cmd/Shift или средней кнопкой — как обычная ссылка (новая вкладка)
+// Обработчик клика по ссылке на фильм: обычный клик открывает мини-окно (постер вылетает из
+// элемента с классом .poster внутри ссылки), клик с Ctrl/Cmd/Shift — обычная ссылка
 export function quickClick(quick, movie) {
   return e => {
     if (!quick || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
-    quick.open(movie);
+    const el = e.currentTarget;
+    quick.open(movie, el.querySelector('.movie-card__poster') || el.querySelector('.poster'));
   };
 }

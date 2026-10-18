@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { quickClick, useQuickView } from '../context/QuickView';
+import { glowOnHover } from '../posterPalette';
 import { SOURCES, STATUSES } from '../utils';
 import Poster from './Poster';
 
@@ -24,7 +25,7 @@ export function externalScore(movie) {
 }
 
 // Карточка фильма в сетке: постер, название, год и жанры, рейтинг кинобазы и отметки пользователя
-export default function MovieCard({ movie, to, onClick, status, rating, ratingTitle = 'Моя оценка', favorite, source, busy = false }) {
+export default function MovieCard({ movie, to, onClick, status, rating, ratingTitle = 'Моя оценка', favorite, source, busy = false, index }) {
   const meta = [movie.year, movie.genres?.slice(0, 2).join(', ')].filter(Boolean).join(', ');
   const ext = externalScore(movie);
   const quick = useQuickView();
@@ -63,13 +64,26 @@ export default function MovieCard({ movie, to, onClick, status, rating, ratingTi
 
   if (to) {
     return (
-      <Link to={to} className="movie-card" onClick={quickClick(quick, movie)}>
+      <Link
+        to={to}
+        className="movie-card"
+        style={index !== undefined ? { '--i': index } : undefined}
+        onClick={quickClick(quick, movie)}
+        onMouseEnter={glowOnHover(movie.poster_url)}
+      >
         {content}
       </Link>
     );
   }
   return (
-    <button type="button" className="movie-card" onClick={onClick} disabled={busy}>
+    <button
+      type="button"
+      className="movie-card"
+      style={index !== undefined ? { '--i': index } : undefined}
+      onClick={onClick}
+      onMouseEnter={glowOnHover(movie.poster_url)}
+      disabled={busy}
+    >
       {content}
     </button>
   );

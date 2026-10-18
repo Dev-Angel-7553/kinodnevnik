@@ -4,7 +4,8 @@ Vercel вызывает это ASGI-приложение для адресов /
 (правила — в vercel.json). Клиентская часть собирается Vite и раздаётся как статика.
 
 На Vercel нет постоянного диска: по умолчанию база SQLite создаётся в /tmp и заполняется
-демонстрационными данными при холодном старте функции. Для постоянного хранения задайте
+демонстрационными данными при холодном старте функции, а затем сбрасывается к ним каждые 30 минут
+(переменная DEMO_RESET_MINUTES, 0 — не сбрасывать). Для постоянного хранения задайте
 в настройках проекта переменную DATABASE_URL с адресом PostgreSQL (например, Neon).
 """
 import os
@@ -16,6 +17,7 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 os.environ.setdefault("DATABASE_URL", "sqlite:////tmp/kinodnevnik.db")
 os.environ.setdefault("POSTER_CACHE_DIR", "/tmp/kinodnevnik-posters")
+os.environ.setdefault("DEMO_RESET_MINUTES", "30")  # публичное демо: данные сбрасываются каждые 30 минут
 
 from app.main import app  # noqa: E402,F401
 from app.seed import init_db  # noqa: E402

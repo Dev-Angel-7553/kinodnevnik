@@ -93,7 +93,7 @@ export default function Register() {
             onFinalStepCompleted={submit}
             linear
             width="100%"
-            accentColor="#ecebe8"
+            accentColor="#f5f4f0"
             backButtonText="Назад"
             nextButtonText="Далее"
             completeButtonText={loading ? 'Создаём…' : 'Зарегистрироваться'}

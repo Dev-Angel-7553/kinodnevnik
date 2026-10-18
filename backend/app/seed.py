@@ -18,6 +18,7 @@ from .config import BASE_DIR
 from .database import Base, SessionLocal, engine
 from .models import DeletedUserLog, Movie, Role, SearchHistory, User, UserMovie
 from .security import hash_password
+from .services.demo_reset import mark_seeded
 from .services.catalog import get_or_create_genres
 
 USERS = [
@@ -147,6 +148,17 @@ def review_for(rnd: random.Random, rating: int) -> str:
     return rnd.choice(REVIEWS_BY_MOOD[mood])
 
 
+# Хеши паролей демо-аккаунтов вычисляются один раз за запуск сервера: bcrypt намеренно
+# медленный, а при периодическом сбросе демо-базы пересоздавать их каждый раз незачем
+_HASHES: dict[str, str] = {}
+
+
+def demo_hash(password: str) -> str:
+    if password not in _HASHES:
+        _HASHES[password] = hash_password(password)
+    return _HASHES[password]
+
+
 def seed(db) -> None:
     rnd = random.Random(2026)
     roles = {"admin": Role(code="admin", name="Администратор"), "user": Role(code="user", name="Пользователь")}
@@ -155,7 +167,7 @@ def seed(db) -> None:
     users = {}
     for i, (login, password, last, first, role, color) in enumerate(USERS):
         created = datetime.now() - timedelta(days=380 - i * 37, hours=rnd.randint(0, 20))
-        user = User(login=login, password_hash=hash_password(password), last_name=last,
+        user = User(login=login, password_hash=demo_hash(password), last_name=last,
                     first_name=first, email=f"{login}@kinodnevnik.ru", role=roles[role],
                     avatar_color=color, created_at=created,
                     last_login_at=datetime.now() - timedelta(days=rnd.randint(0, 20)))
@@ -196,6 +208,7 @@ def seed(db) -> None:
     db.add(DeletedUserLog(user_id=99, login="free_movies_hd", email="free_movies_hd@mail.ru",
                           reason="Рассылка ссылок на пиратские сайты в рецензиях",
                           deleted_by="admin", deleted_at=datetime.now() - timedelta(days=24)))
+    mark_seeded(db)
     db.commit()
 
 

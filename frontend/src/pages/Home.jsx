@@ -9,6 +9,7 @@ import Poster from '../components/Poster';
 import LogoLoop from '../components/reactbits/LogoLoop/LogoLoop';
 import SplitText from '../components/reactbits/SplitText/SplitText';
 import { useAuth } from '../context/AuthContext';
+import { useAmbient } from '../posterPalette';
 import { quickClick, useQuickView } from '../context/QuickView';
 import { formatDate } from '../utils';
 
@@ -101,6 +102,8 @@ export default function Home() {
   };
 
   const last = recent[0];
+  // Фон главной подсвечивается постером фильма на билете
+  useAmbient((user ? last?.movie : guestReview?.movie)?.poster_url);
   // Лента запоминается, чтобы ввод в строку поиска не перезапускал её движение
   const ribbon = useMemo(
     () =>
@@ -199,9 +202,9 @@ export default function Home() {
                 <p className="section-lead">Средняя оценка зрителей КиноДневника</p>
               </div>
             </div>
-            <div className="movie-grid">
-              {topRated.map(m => (
-                <MovieCard key={m.id} movie={m} to={`/movie/${m.id}`} rating={score(m.community_rating)} ratingTitle={`Средняя оценка зрителей КиноДневника, голосов: ${m.votes}`} />
+            <div className="movie-grid movie-grid--stagger">
+              {topRated.map((m, i) => (
+                <MovieCard key={m.id} index={i} movie={m} to={`/movie/${m.id}`} rating={score(m.community_rating)} ratingTitle={`Средняя оценка зрителей КиноДневника, голосов: ${m.votes}`} />
               ))}
             </div>
           </section>
@@ -218,9 +221,9 @@ export default function Home() {
                 Все {planned.length}
               </Link>
             </div>
-            <div className="movie-grid">
-              {planned.slice(0, 6).map(e => (
-                <MovieCard key={e.id} movie={e.movie} to={`/movie/${e.movie.id}`} />
+            <div className="movie-grid movie-grid--stagger">
+              {planned.slice(0, 6).map((e, i) => (
+                <MovieCard key={e.id} index={i + 3} movie={e.movie} to={`/movie/${e.movie.id}`} />
               ))}
             </div>
           </section>
@@ -233,9 +236,9 @@ export default function Home() {
                   <p className="section-lead">Фильмы, которые чаще всего добавляют в дневник</p>
                 </div>
               </div>
-              <div className="movie-grid">
-                {popular.filter(m => !topIds.has(m.id)).slice(0, 6).map(m => (
-                  <MovieCard key={m.id} movie={m} to={`/movie/${m.id}`} />
+              <div className="movie-grid movie-grid--stagger">
+                {popular.filter(m => !topIds.has(m.id)).slice(0, 6).map((m, i) => (
+                  <MovieCard key={m.id} index={i + 3} movie={m} to={`/movie/${m.id}`} />
                 ))}
               </div>
             </section>

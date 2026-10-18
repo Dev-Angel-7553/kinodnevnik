@@ -80,6 +80,7 @@ export const API = {
   catalog: params => request('/movies/catalog', { params }),
   summary: () => request('/movies/summary'),
   providers: () => request('/movies/providers'),
+  health: () => request('/health'),
   genres: () => request('/movies/genres'),
   movie: id => request(`/movies/${id}`),
   reviews: id => request(`/movies/${id}/reviews`),

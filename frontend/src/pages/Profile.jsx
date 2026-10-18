@@ -154,7 +154,7 @@ export default function Profile() {
                 items={history}
                 width="100%"
                 maxHeight={300}
-                accentColor="#ecebe8"
+                accentColor="#f5f4f0"
                 theme="graphite"
                 frame={false}
                 radius={8}
