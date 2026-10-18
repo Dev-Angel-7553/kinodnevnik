@@ -42,6 +42,7 @@ export default function SwipeToast({
   swipeDistance = 40,
   duration = 4000,
   fuse = 'bottom',
+  edge = 'bottom',
   pauseOnHover = true,
   closeButton = false,
   inline = false,
@@ -49,6 +50,8 @@ export default function SwipeToast({
   className = ''
 }) {
   const reduce = useReducedMotion();
+  // Куда уезжает уведомление: вниз (по умолчанию) или вверх, если стопка прижата к верху экрана
+  const dir = edge === 'top' ? -1 : 1;
   const [phase, setPhase] = useState('open');
   const [instant, setInstant] = useState(false);
   const [mounted, setMounted] = useState(HAS_STARTING_STYLE);
@@ -153,7 +156,7 @@ export default function SwipeToast({
     leaving.current = true;
     pendingClose.current = null;
     if (!reduce && cardRef.current) {
-      animate(y, dy + cardRef.current.offsetHeight, { type: 'spring', duration: 0.3, bounce: 0, velocity: v * 1000 });
+      animate(y, dy + dir * cardRef.current.offsetHeight, { type: 'spring', duration: 0.3, bounce: 0, velocity: v * 1000 });
     }
     animate(fade, 0, { duration: 0.2, ease: EASE_OUT }).then(() => finish('swipe'));
   };
@@ -184,7 +187,7 @@ export default function SwipeToast({
       if (cardRef.current) cardRef.current.dataset.swiping = '';
     }
     const raw = e.clientY - d.grab;
-    const next = raw >= 0 ? raw : rubberband(raw, RESIST_PX);
+    const next = dir * raw >= 0 ? raw : rubberband(raw, RESIST_PX);
     y.set(next);
     d.moved = true;
     d.hist.push([performance.now(), next]);
@@ -201,7 +204,7 @@ export default function SwipeToast({
     flags.current.interacting = false;
     const dy = y.get();
     const v = velocityOf(d.hist);
-    if (dy > 0 && (v > FLICK || (dy >= swipeDistance && v >= 0))) {
+    if (dir * dy > 0 && (dir * v > FLICK || (dir * dy >= swipeDistance && dir * v >= 0))) {
       swipeOut(dy, v);
       return;
     }
@@ -225,6 +228,7 @@ export default function SwipeToast({
       className={`swipe-toast${className ? ` ${className}` : ''}`}
       data-phase={phase}
       data-inline={inline ? 'true' : 'false'}
+      data-edge={edge}
       data-fuse={duration > 0 ? fuse : 'none'}
       data-dismissible={dismissible ? 'true' : 'false'}
       data-instant={instant ? '' : undefined}

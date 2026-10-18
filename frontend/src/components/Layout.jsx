@@ -218,9 +218,6 @@ function Footer() {
             <a href="/docs" target="_blank" rel="noreferrer">
               Документация API
             </a>
-            <a href="https://github.com/Dev-Angel-7553/kinodnevnik" target="_blank" rel="noreferrer">
-              Исходный код
-            </a>
           </nav>
           <div>
             <h2>Данные о фильмах</h2>

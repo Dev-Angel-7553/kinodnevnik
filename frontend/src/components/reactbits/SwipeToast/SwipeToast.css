@@ -255,6 +255,19 @@
   opacity: 0;
 }
 
+/* Стопка у верхнего края: уведомление выезжает сверху и уходит вверх */
+.swipe-toast[data-edge='top'][data-mounted='false'] .swipe-toast__lift,
+.swipe-toast[data-edge='top'][data-phase='closing'] .swipe-toast__lift,
+.swipe-toast[data-edge='top'][data-phase='gone'] .swipe-toast__lift {
+  transform: translateY(-100%);
+}
+
+@starting-style {
+  .swipe-toast[data-edge='top'] .swipe-toast__lift {
+    transform: translateY(-100%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .swipe-toast__lift {
     transform: none !important;
