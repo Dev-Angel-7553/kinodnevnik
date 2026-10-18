@@ -2,8 +2,9 @@
 
 Курсовая работа по МДК 09.01 «Проектирование и разработка веб-приложений».
 
-**Клиент:** React 19 + Vite, 19 компонентов [React Bits](https://reactbits.dev/) (PillNav, Dock, LogoLoop,
-DriftWall, TiltedCard, RubberSegment, PeekRating, TearTicket, HoldButton, Counter, Stepper и др.), React Router, Recharts.
+**Клиент:** React 19 + Vite, 20 компонентов [React Bits](https://reactbits.dev/) (PillNav, Dock, LogoLoop,
+DriftWall, TiltedCard, RubberSegment, PeekRating, TearTicket, HoldButton, ClickSpark, Counter, Stepper и др.),
+React Router, Recharts. Мини-окно фильма по клику на карточку, фон в цветах постера открытого фильма.
 **Сервер:** Python, FastAPI, SQLAlchemy 2, SQLite (или PostgreSQL), JWT + bcrypt.
 **Данные о фильмах:** TMDB, ПоискКино (Кинопоиск), OMDb, Википедия, iTunes Search API — с кэшированием
 и автоматическим переключением, если один из источников недоступен. Википедия и iTunes работают без ключей.

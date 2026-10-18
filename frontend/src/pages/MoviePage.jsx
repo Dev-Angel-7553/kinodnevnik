@@ -14,7 +14,8 @@ import TiltedCard from '../components/reactbits/TiltedCard/TiltedCard';
 import Poster from '../components/Poster';
 import { EmptyState, Notice } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
-import usePosterColor from '../usePosterColor';
+import { setAmbient } from '../ambient';
+import usePosterPalette from '../posterPalette';
 import { useToast } from '../context/ToastContext';
 import { formatDate, formatRuntime, plural, SOURCES, STATUSES, todayISO } from '../utils';
 
@@ -86,7 +87,10 @@ export default function MoviePage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
 
-  const posterColor = usePosterColor(movie?.poster_url);
+  // Цвета постера: акцент для главной кнопки и приглушённые пятна фона под атмосферу фильма
+  const palette = usePosterPalette(movie?.poster_url);
+  const posterColor = palette?.accent;
+  useEffect(() => (palette ? setAmbient(palette.ambient) : undefined), [palette]);
   const [poster, setPoster] = useState({ w: 300, h: 450 });
   const [posterOk, setPosterOk] = useState(null);
 
@@ -258,7 +262,7 @@ export default function MoviePage() {
             <div className="rating-row">
               {ratings.map(([label, value]) => (
                 <div key={label} className="rating-pill">
-                  <b>{Number(value).toFixed(1)}</b>
+                  <b>{Number(value).toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</b>
                   <span>{label}</span>
                 </div>
               ))}

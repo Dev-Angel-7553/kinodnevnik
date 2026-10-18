@@ -142,7 +142,8 @@ def test_old_database_is_updated(client):
     with SessionLocal() as db:
         dune = db.scalar(select(Movie).where(Movie.external_id == "tt1160419"))
         assert dune.poster_url == "/posters/tt1160419.jpg" and dune.rating_imdb == 8.0
-        assert db.execute(text("PRAGMA user_version")).scalar() >= 3
+        assert db.execute(text("PRAGMA user_version")).scalar() >= 4
+        assert dune.rating_kp == 7.7
     assert client.post("/api/auth/login", json={"login": "tester_1", "password": "secret123"}).status_code == 200
 
 
@@ -258,6 +259,10 @@ def test_enrich_ratings_by_imdb(client, monkeypatch):
         return httpx.Response(200, json={"docs": [{"id": 1, "name": "Фильм", "year": 2000,
                                                     "rating": {"kp": 8.4, "imdb": 8.1}}]})
 
+    with SessionLocal() as db:  # у каталога рейтинги уже есть — сбрасываем их у трёх фильмов
+        for movie in db.scalars(select(Movie).where(Movie.imdb_id.is_not(None)).limit(3)):
+            movie.rating_kp = None
+        db.commit()
     result = enrich.enrich_catalog(limit=3, client=httpx.Client(transport=httpx.MockTransport(poiskkino)))
     assert result["updated"] == 3
     with SessionLocal() as db:

@@ -13,9 +13,11 @@ import { forwardRef, Suspense } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../context/AuthContext';
+import { QuickViewProvider } from '../context/QuickView';
 import Avatar from './Avatar';
 import Loader from './Loader';
 import Logo from './Logo';
+import ClickSpark from './reactbits/ClickSpark/ClickSpark';
 import Dock from './reactbits/Dock/Dock';
 import PillNav from './reactbits/PillNav/PillNav';
 
@@ -200,18 +202,29 @@ function Footer() {
 
 export default function Layout() {
   return (
-    <div className="app-shell">
-      <header className="site-header">
-        <DesktopHeader />
-        <MobileChrome />
-      </header>
-      <main className="site-main">
-        {/* Пока загружается код страницы, шапка и фон остаются на месте */}
-        <Suspense fallback={<Loader />}>
-          <Outlet />
-        </Suspense>
-      </main>
-      <Footer />
-    </div>
+    <QuickViewProvider>
+      {/* Фон: три размытых приглушённых пятна; на странице фильма — в цветах его постера */}
+      <div className="ambient" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </div>
+      {/* Искры при клике — короткий отклик на любое нажатие */}
+      <ClickSpark sparkColor={['#f5c518', '#ecebe8']} sparkSize={9} sparkRadius={20} sparkCount={8} duration={420}>
+        <div className="app-shell">
+          <header className="site-header">
+            <DesktopHeader />
+            <MobileChrome />
+          </header>
+          <main className="site-main">
+            {/* Пока загружается код страницы, шапка и фон остаются на месте */}
+            <Suspense fallback={<Loader />}>
+              <Outlet />
+            </Suspense>
+          </main>
+          <Footer />
+        </div>
+      </ClickSpark>
+    </QuickViewProvider>
   );
 }

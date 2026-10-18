@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Analytics01Icon, BookOpen01Icon, Database01Icon } from '@hugeicons/core-free-icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { API } from '../api/client';
@@ -9,6 +9,7 @@ import Poster from '../components/Poster';
 import LogoLoop from '../components/reactbits/LogoLoop/LogoLoop';
 import SplitText from '../components/reactbits/SplitText/SplitText';
 import { useAuth } from '../context/AuthContext';
+import { quickClick, useQuickView } from '../context/QuickView';
 import { formatDate } from '../utils';
 
 // Корешок билета: последний просмотренный фильм пользователя или самый обсуждаемый фильм для гостя
@@ -34,11 +35,11 @@ function Ticket({ label, movie, date, mark, markNote, review }) {
 
 const score = value => (value ? value.toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : null);
 
-// Элемент ленты: постер со ссылкой и оценкой
-const ribbonItem = (movie, mark, note) => ({
+// Элемент ленты: постер со ссылкой и оценкой; щелчок открывает мини-окно фильма
+const ribbonItem = (movie, mark, note, quick) => ({
   ariaLabel: movie.title,
   node: (
-    <Link to={`/movie/${movie.id}`} className="ribbon-item" draggable={false}>
+    <Link to={`/movie/${movie.id}`} className="ribbon-item" draggable={false} onClick={quickClick(quick, movie)}>
       <Poster src={movie.poster_url} title={movie.title} year={movie.year} />
       {mark ? (
         <span className="ribbon-item__mark">
@@ -52,6 +53,7 @@ const ribbonItem = (movie, mark, note) => ({
 
 export default function Home() {
   const { user } = useAuth();
+  const quick = useQuickView();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [popular, setPopular] = useState([]);
@@ -99,9 +101,14 @@ export default function Home() {
   };
 
   const last = recent[0];
-  const ribbon = user && recent.length >= 6
-    ? recent.slice(0, 16).map(e => ribbonItem(e.movie, e.rating))
-    : popular.map(m => ribbonItem(m, score(m.community_rating)));
+  // Лента запоминается, чтобы ввод в строку поиска не перезапускал её движение
+  const ribbon = useMemo(
+    () =>
+      user && recent.length >= 6
+        ? recent.slice(0, 16).map(e => ribbonItem(e.movie, e.rating, null, quick))
+        : popular.map(m => ribbonItem(m, score(m.community_rating), null, quick)),
+    [user, recent, popular, quick]
+  );
   const topIds = new Set(topRated.map(m => m.id));
 
   return (

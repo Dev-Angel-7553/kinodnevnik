@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 import { API } from '../api/client';
@@ -29,12 +29,27 @@ function useWallPosters() {
 // На телефоне стена заменяется узкой лентой постеров над формой.
 export function AuthScene({ width = 420, children }) {
   const movies = useWallPosters();
+  // Списки постеров запоминаются: иначе каждая нажатая в форме клавиша перерисовывает страницу,
+  // стена получает «новые» данные и сбрасывает движение
+  const wallItems = useMemo(() => movies.map(m => ({ image: m.poster_url, title: m.title })), [movies]);
+  const stripItems = useMemo(
+    () =>
+      movies.slice(0, 14).map(m => ({
+        node: (
+          <span className="ribbon-item ribbon-item--small">
+            <Poster src={m.poster_url} title={m.title} />
+          </span>
+        ),
+        ariaLabel: m.title,
+      })),
+    [movies]
+  );
   return (
     <div className="auth-page">
       <div className="auth-wall" aria-hidden="true">
         {movies.length > 0 && (
           <DriftWall
-            items={movies.map(m => ({ image: m.poster_url, title: m.title }))}
+            items={wallItems}
             columns={5}
             tileWidth={150}
             tileHeight={225}
@@ -57,14 +72,7 @@ export function AuthScene({ width = 420, children }) {
           {movies.length > 0 && (
             <div className="auth-strip" aria-hidden="true">
               <LogoLoop
-                logos={movies.slice(0, 14).map(m => ({
-                  node: (
-                    <span className="ribbon-item ribbon-item--small">
-                      <Poster src={m.poster_url} title={m.title} />
-                    </span>
-                  ),
-                  ariaLabel: m.title,
-                }))}
+                logos={stripItems}
                 speed={22}
                 logoHeight={14}
                 gap={10}

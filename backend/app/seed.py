@@ -64,7 +64,7 @@ DEMO_DIARY = [
     ("tt0338013", "planned", None, None, False, 45),
 ]
 
-SEED_VERSION = 3
+SEED_VERSION = 4  # 4: рейтинги Кинопоиска в каталоге
 
 # Рецензии других зрителей подбираются по оценке, чтобы текст не спорил с числом
 REVIEWS_BY_MOOD = {

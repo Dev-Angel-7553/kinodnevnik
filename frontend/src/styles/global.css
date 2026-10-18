@@ -38,6 +38,30 @@
   color-scheme: dark;
 }
 
+/* Цвета фона-«атмосферы»: по умолчанию приглушённые красный, зелёный и синий,
+   на странице фильма — из его постера. @property позволяет плавно менять их */
+@property --amb-1 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: hsl(352 34% 30%);
+}
+
+@property --amb-2 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: hsl(160 30% 25%);
+}
+
+@property --amb-3 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: hsl(216 38% 32%);
+}
+
+:root {
+  transition: --amb-1 1.6s ease, --amb-2 1.6s ease, --amb-3 1.6s ease;
+}
+
 /* ---------- Основа ---------- */
 
 *,
@@ -1087,19 +1111,6 @@ input[type='date']::-webkit-calendar-picker-indicator {
   position: relative;
 }
 
-/* Мягкий отсвет цвета постера в верхней части страницы — без размытия и стекла */
-.movie-page::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  z-index: -1;
-  width: 100vw;
-  height: 520px;
-  transform: translateX(-50%);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--movie-accent) 16%, var(--bg)) 0%, var(--bg) 100%);
-  pointer-events: none;
-}
 
 .movie-hero {
   display: grid;
@@ -2209,4 +2220,235 @@ input[type='date']::-webkit-calendar-picker-indicator {
 .hold-danger.hold-button:disabled,
 .hold-danger.hold-button[aria-disabled='true'] {
   opacity: 0.45;
+}
+
+/* ---------- Фон-атмосфера: три размытых пятна ----------
+   Размытие нарисовано радиальными градиентами, а не фильтром blur — это дёшево для видеокарты.
+   Пятна медленно дрейфуют (только transform), при «уменьшить движение» стоят на месте. */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient i {
+  position: absolute;
+  width: 78vmax;
+  height: 78vmax;
+  border-radius: 50%;
+  opacity: 0.5;
+  will-change: transform;
+}
+
+.ambient i:nth-child(1) {
+  top: -34vmax;
+  left: -26vmax;
+  background: radial-gradient(closest-side, var(--amb-1), transparent);
+  animation: ambient-a 40s ease-in-out infinite alternate;
+}
+
+.ambient i:nth-child(2) {
+  top: -30vmax;
+  right: -30vmax;
+  background: radial-gradient(closest-side, var(--amb-2), transparent);
+  animation: ambient-b 48s ease-in-out infinite alternate;
+}
+
+.ambient i:nth-child(3) {
+  bottom: -42vmax;
+  left: 12vmax;
+  background: radial-gradient(closest-side, var(--amb-3), transparent);
+  animation: ambient-c 56s ease-in-out infinite alternate;
+}
+
+/* Лёгкое зерно убирает «ступеньки» градиента на тёмном фоне */
+.ambient::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.045;
+}
+
+@keyframes ambient-a {
+  to {
+    transform: translate(10vmax, 7vmax) scale(1.08);
+  }
+}
+
+@keyframes ambient-b {
+  to {
+    transform: translate(-9vmax, 9vmax) scale(0.94);
+  }
+}
+
+@keyframes ambient-c {
+  to {
+    transform: translate(8vmax, -8vmax) scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient i {
+    animation: none;
+  }
+}
+
+/* ---------- Мини-окно фильма (по клику на карточку) ---------- */
+.qv {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.qv__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 12, 14, 0.45);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  backdrop-filter: blur(18px) saturate(1.15);
+}
+
+.qv__panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 28px;
+  width: min(820px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 28px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.75);
+}
+
+.qv__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.qv__poster .poster {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: var(--poster-shadow);
+}
+
+.qv__title {
+  margin: 0 36px 0 0;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variation-settings: 'SHRP' 100;
+}
+
+.qv__original {
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.qv__facts {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 14.5px;
+}
+
+.qv__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.qv__scores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 26px;
+  margin: 18px 0 0;
+}
+
+.qv__scores div {
+  display: grid;
+  gap: 2px;
+}
+
+.qv__scores dd {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.qv__scores dt {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.qv__overview {
+  display: -webkit-box;
+  margin-top: 16px;
+  overflow: hidden;
+  line-height: 1.6;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+}
+
+.qv__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-top: 22px;
+}
+
+.qv__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.qv__status::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status);
+}
+
+@media (max-width: 640px) {
+  .qv {
+    align-items: end;
+    padding: 0;
+  }
+
+  .qv__panel {
+    grid-template-columns: 104px minmax(0, 1fr);
+    gap: 16px;
+    max-height: 88dvh;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+    border-radius: 16px 16px 0 0;
+  }
+
+  .qv__title {
+    font-size: 21px;
+  }
+
+  .qv__scores dd {
+    font-size: 18px;
+  }
+
+  .qv__overview {
+    -webkit-line-clamp: 5;
+  }
 }

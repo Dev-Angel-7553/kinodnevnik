@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { quickClick, useQuickView } from '../context/QuickView';
 import { SOURCES, STATUSES } from '../utils';
 import Poster from './Poster';
 
@@ -26,6 +27,7 @@ export function externalScore(movie) {
 export default function MovieCard({ movie, to, onClick, status, rating, ratingTitle = 'Моя оценка', favorite, source, busy = false }) {
   const meta = [movie.year, movie.genres?.slice(0, 2).join(', ')].filter(Boolean).join(', ');
   const ext = externalScore(movie);
+  const quick = useQuickView();
   const content = (
     <>
       <div className="movie-card__poster">
@@ -61,7 +63,7 @@ export default function MovieCard({ movie, to, onClick, status, rating, ratingTi
 
   if (to) {
     return (
-      <Link to={to} className="movie-card">
+      <Link to={to} className="movie-card" onClick={quickClick(quick, movie)}>
         {content}
       </Link>
     );
