@@ -90,8 +90,10 @@ DEMO_SEARCHES = ["интерстеллар", "дюна", "паразиты", "Н
                  "гранд будапешт", "тайна коко", "Миядзаки"]
 
 
+# rating_kp и rating_tmdb заполняются из ПоискКино и TMDB и сохраняются в каталог,
+# чтобы не тратить дневной лимит API на каждом запуске
 CATALOG_FIELDS = ("title", "original_title", "year", "runtime", "director", "country", "overview",
-                  "rating_imdb", "imdb_id")
+                  "rating_imdb", "rating_kp", "rating_tmdb", "imdb_id")
 
 
 def read_catalog() -> list[dict]:

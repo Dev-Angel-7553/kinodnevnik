@@ -19,5 +19,7 @@ os.environ.setdefault("POSTER_CACHE_DIR", "/tmp/kinodnevnik-posters")
 
 from app.main import app  # noqa: E402,F401
 from app.seed import init_db  # noqa: E402
+from app.services.enrich import enrich_in_background  # noqa: E402
 
 init_db()  # на случай, если платформа не вызывает lifespan приложения
+enrich_in_background()  # дополняет рейтингами только фильмы, у которых их ещё нет
