@@ -165,6 +165,8 @@ def fake_wiki(request: httpx.Request) -> httpx.Response:
     return httpx.Response(200, json={"batchcomplete": True, "query": {"pages": [
         {"pageid": 2, "ns": 0, "title": "Дюна (роман)", "index": 1,
          "description": "научно-фантастический роман Фрэнка Герберта", "extract": "Роман 1965 года."},
+        {"pageid": 3, "ns": 0, "title": "Дюна (саундтрек)", "index": 3,
+         "description": "саундтрек к фильму 2021 года", "extract": "Альбом Ханса Циммера."},
         {"pageid": 1, "ns": 0, "title": "Дюна (фильм, 2021)", "index": 2,
          "description": "фильм Дени Вильнёва 2021 года",
          "thumbnail": {"source": "https://upload.wikimedia.org/dune.jpg", "width": 260, "height": 385},
@@ -180,7 +182,7 @@ def test_wikipedia_provider_without_key():
             provider.client = hub.client
         results, used, _ = hub.search("Дюна", "wikipedia")
     assert used == "wikipedia"
-    assert [r.title for r in results] == ["Дюна"]  # роман отфильтрован, уточнение в скобках убрано
+    assert [r.title for r in results] == ["Дюна"]  # роман и саундтрек отфильтрованы, уточнение убрано
     assert results[0].year == 2021 and results[0].poster_url.endswith("dune.jpg")
 
 
@@ -219,6 +221,7 @@ def test_poster_cache(client, tmp_path, monkeypatch):
     # Ответ API подставляет адрес кэша, а постеры с чужих сайтов не скачиваются
     item = SearchItem(source="wikipedia", external_id="Дюна", title="Дюна", poster_url=url).model_dump()
     assert item["poster_url"].startswith("/api/posters?url=https%3A%2F%2Fupload.wikimedia.org")
+    assert posters.is_allowed("https://thumb.wikimedia.org/wikipedia/ru/thumb/b/bf/x.jpg/500px-x.jpg")
     assert posters.fetch("https://example.com/x.jpg", mock) is None
     assert client.get("/api/posters", params={"url": "https://example.com/poster.jpg"}).status_code == 404
 

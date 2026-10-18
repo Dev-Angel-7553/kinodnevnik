@@ -25,7 +25,7 @@ TYPES = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}
 # Скачиваем картинки только с адресов кинобаз, а не с любого сайта
 ALLOWED_HOSTS = (
     "image.tmdb.org",          # TMDB
-    "upload.wikimedia.org",    # Википедия
+    "wikimedia.org",           # Википедия (upload. и thumb.)
     "mzstatic.com",            # iTunes
     "media-amazon.com",        # OMDb (постеры IMDb)
     "yandex.net",              # Кинопоиск

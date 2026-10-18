@@ -10,6 +10,9 @@ from .base import BaseProvider, MovieData, ProviderError
 
 API = "https://ru.wikipedia.org/w/api.php"
 FILM_WORDS = ("фильм", "мультфильм", "аниме", "кинофильм", "мюзикл")
+# Статьи, которые упоминают фильм, но фильмом не являются: саундтрек, книга, песня, сериал…
+NOT_FILM_WORDS = ("саундтрек", "альбом", "песня", "сингл", "роман", "книга", "повесть", "рассказ",
+                  "видеоигра", "компьютерная игра", "персонаж", "сериал", "фильмография", "премия")
 YEAR_RE = re.compile(r"\b(18[89]\d|19\d\d|20\d\d)\b")
 
 
@@ -41,8 +44,22 @@ class WikipediaProvider(BaseProvider):
 
     @staticmethod
     def _is_film(page: dict) -> bool:
-        text = f"{page.get('description', '')} {page.get('extract', '')[:200]}".lower()
-        return any(word in text for word in FILM_WORDS)
+        """Статья о фильме: в описании слово «фильм» стоит раньше, чем «саундтрек», «роман» и т. п.
+
+        «Фильм по роману Кинга» — фильм, «саундтрек к фильму» и «роман, экранизированный
+        в фильме» — нет. Уточнение в названии («Дюна (саундтрек)») тоже учитывается.
+        """
+        title = page.get("title", "").lower()
+        if "(" in title and any(word in title[title.index("("):] for word in NOT_FILM_WORDS):
+            return False
+        text = (page.get("description") or "").lower() or (page.get("extract") or "")[:200].lower()
+
+        def first(words):
+            found = [text.find(w) for w in words if w in text]
+            return min(found) if found else None
+
+        film, other = first(FILM_WORDS), first(NOT_FILM_WORDS)
+        return film is not None and (other is None or film < other)
 
     def _parse(self, page: dict) -> MovieData:
         thumb = page.get("thumbnail") or {}
@@ -64,7 +81,11 @@ class WikipediaProvider(BaseProvider):
              "gsrnamespace": 0, "pithumbsize": 500},
             cache_key=f"search:{query.lower()}",
         )
-        return [self._parse(p) for p in pages if self._is_film(p)][:limit]
+        films = [self._parse(p) for p in pages if self._is_film(p)]
+        # Сначала фильмы, в названии которых есть запрос: поиск Википедии находит и «соседей»
+        wanted = query.lower().replace("ё", "е")
+        films.sort(key=lambda m: wanted not in m.title.lower().replace("ё", "е"))
+        return films[:limit]
 
     def details(self, external_id: str) -> MovieData:
         pages = self._query({"titles": external_id, "pithumbsize": 700, "exsentences": 6},
