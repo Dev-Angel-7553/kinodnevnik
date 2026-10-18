@@ -1,0 +1,13 @@
+{
+  "name": "kinodnevnik",
+  "private": true,
+  "description": "КиноДневник — веб-приложение для учёта просмотренных фильмов (FastAPI + React)",
+  "scripts": {
+    "start": "node run.mjs",
+    "dev": "node run.mjs",
+    "setup": "node run.mjs --setup",
+    "build": "npm --prefix frontend run build",
+    "test": "node run.mjs --test",
+    "reset-db": "node run.mjs --reset-db"
+  }
+}

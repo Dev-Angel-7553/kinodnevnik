@@ -1,0 +1,9 @@
+node_modules/
+__pycache__/
+.pytest_cache/
+.venv/
+*.db
+.env
+backend/static/posters/cache/
+frontend/dist/
+.vercel/
