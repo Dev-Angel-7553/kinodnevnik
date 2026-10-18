@@ -34,16 +34,22 @@ function visible(el) {
   return r.width > 0 && r.bottom > 0 && r.top < window.innerHeight;
 }
 
+// Телефоны и планшеты: без полёта постера, размытия фона и перекраски страницы —
+// окно просто выезжает снизу (только transform и opacity), так анимация не дёргается
+const isLite = () =>
+  typeof window !== 'undefined' && window.matchMedia('(max-width: 640px), (pointer: coarse)').matches;
+
 function QuickViewPanel({ movie: initial, from, onClosed }) {
   const { user } = useAuth();
   const notify = useToast();
   const reduce = useReducedMotion();
+  const [lite] = useState(isLite);
   const [movie, setMovie] = useState(initial);
   const [saving, setSaving] = useState(false);
-  const [phase, setPhase] = useState(from && !reduce ? 'flying' : 'open'); // flying → open → closing
+  const [phase, setPhase] = useState(from && !reduce && !isLite() ? 'flying' : 'open'); // flying → open → closing
   const posterRef = useRef(null);
   const closeRef = useRef(null);
-  const flies = Boolean(from) && !reduce;
+  const flies = Boolean(from) && !reduce && !lite;
 
   // Полёт постера из карточки в окно (FLIP: начинаем на месте карточки и пружиной едем на своё)
   useLayoutEffect(() => {
@@ -66,6 +72,7 @@ function QuickViewPanel({ movie: initial, from, onClosed }) {
 
   // Фон страницы подсвечивается цветами постера, пока окно открыто
   useEffect(() => {
+    if (lite) return undefined;
     let restore = null;
     let alive = true;
     loadPalette(initial.poster_url).then(p => {
@@ -75,7 +82,7 @@ function QuickViewPanel({ movie: initial, from, onClosed }) {
       alive = false;
       restore?.();
     };
-  }, [initial.poster_url]);
+  }, [initial.poster_url, lite]);
 
   const close = useCallback(async () => {
     if (phase === 'closing') return;
@@ -84,7 +91,7 @@ function QuickViewPanel({ movie: initial, from, onClosed }) {
       const d = delta(from, posterRef.current);
       await animate(posterRef.current, { x: d.x, y: d.y, scale: d.scale }, { duration: 0.38, ease: [0.4, 0, 0.2, 1] });
     } else {
-      await new Promise(r => setTimeout(r, 180));
+      await new Promise(r => setTimeout(r, lite ? 240 : 180));
     }
     if (from) from.style.visibility = '';
     onClosed();
@@ -141,20 +148,22 @@ function QuickViewPanel({ movie: initial, from, onClosed }) {
       />
       <motion.article
         className="qv__panel"
-        initial={flies ? false : reduce ? { opacity: 0 } : { opacity: 0, y: 28, scale: 0.97 }}
-        animate={phase === 'closing' && !flies ? { opacity: 0, y: 12 } : { opacity: 1, y: 0, scale: 1 }}
-        transition={SPRING}
+        initial={flies ? false : reduce ? { opacity: 0 } : lite ? { opacity: 0, y: 80 } : { opacity: 0, y: 28, scale: 0.97 }}
+        animate={
+          phase === 'closing' && !flies ? (lite ? { opacity: 0, y: 80 } : { opacity: 0, y: 12 }) : { opacity: 1, y: 0, scale: 1 }
+        }
+        transition={lite ? { duration: phase === 'closing' ? 0.22 : 0.3, ease: [0.22, 1, 0.36, 1] } : SPRING}
       >
         <button ref={closeRef} type="button" className="qv__close icon-btn" onClick={close} aria-label="Закрыть">
           ×
         </button>
         <div className="qv__poster" ref={posterRef}>
-          {movie.poster_url && <img className="qv__glow" src={movie.poster_url} alt="" aria-hidden="true" />}
+          {movie.poster_url && !lite && <img className="qv__glow" src={movie.poster_url} alt="" aria-hidden="true" />}
           <Poster src={movie.poster_url} title={movie.title} year={movie.year} />
         </div>
         <motion.div
           className="qv__info"
-          initial={reduce ? false : { opacity: 0, x: 22 }}
+          initial={reduce || lite ? false : { opacity: 0, x: 22 }}
           animate={phase === 'closing' ? { opacity: 0, x: 12 } : { opacity: 1, x: 0 }}
           transition={{ duration: phase === 'closing' ? 0.18 : 0.45, delay: phase === 'closing' ? 0 : 0.12, ease: [0.22, 1, 0.36, 1] }}
         >

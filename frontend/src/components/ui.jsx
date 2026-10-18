@@ -58,7 +58,11 @@ export function Modal({ title, children, onClose, footer }) {
 }
 
 export function Notice({ tone = 'info', children }) {
-  return <div className={`notice notice--${tone}`}>{children}</div>;
+  return (
+    <div className={`notice notice--${tone}`}>
+      <span>{children}</span>
+    </div>
+  );
 }
 
 // Общие настройки выпадающих списков GlideSelect под графитовую тему

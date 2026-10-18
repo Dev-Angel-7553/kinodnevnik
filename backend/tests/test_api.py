@@ -286,6 +286,20 @@ def test_admin_cannot_delete_self(client):
     assert r.status_code == 400
 
 
+def test_avatar_upload(client):
+    import base64
+    h = auth(client)
+    jpeg = b"\xff\xd8\xff\xe0" + b"0" * 500
+    r = client.put("/api/users/me/avatar", headers=h,
+                   json={"image": "data:image/jpeg;base64," + base64.b64encode(jpeg).decode()})
+    assert r.status_code == 200 and r.json()["avatar_url"].endswith("?v=1")
+    image = client.get(r.json()["avatar_url"])
+    assert image.content == jpeg and image.headers["content-type"] == "image/jpeg"
+    fake = "data:image/png;base64," + base64.b64encode(b"not a png at all, just text").decode()
+    assert client.put("/api/users/me/avatar", headers=h, json={"image": fake}).status_code == 422
+    assert client.delete("/api/users/me/avatar", headers=h).json()["avatar_url"] is None
+
+
 # ---------- Сброс демо-базы ----------
 
 def test_demo_reset_every_n_minutes(client, monkeypatch):

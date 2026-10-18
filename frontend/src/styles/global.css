@@ -245,31 +245,81 @@ button {
 }
 
 .site-footer {
+  position: relative;
+  margin-top: 40px;
+  padding: 44px 0 calc(24px + var(--dock-space));
   border-top: 1px solid var(--line);
-  padding: 22px 0 calc(22px + var(--dock-space));
-  color: var(--faint);
-  font-size: 13.5px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 14px;
 }
 
-.site-footer__inner {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 8px 24px;
+.site-footer__grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1.4fr;
+  gap: 32px;
 }
 
-.site-footer__links {
-  display: flex;
-  gap: 18px;
+.site-footer h2 {
+  margin: 0 0 12px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: 0;
+  font-variation-settings: normal;
+}
+
+.site-footer nav {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.site-footer p {
+  margin: 0;
+  max-width: 34ch;
+  line-height: 1.55;
+}
+
+.site-footer__brand {
+  display: grid;
+  align-content: start;
+  gap: 14px;
 }
 
 .site-footer a {
+  width: fit-content;
   color: var(--muted);
   text-decoration: none;
 }
 
 .site-footer a:hover {
   color: var(--text);
+}
+
+.site-footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 24px;
+  margin-top: 36px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  color: var(--faint);
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .site-footer__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .site-footer__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+  }
 }
 
 /* ---------- Кнопки, поля, чипы ---------- */
@@ -505,25 +555,39 @@ input[type='date']::-webkit-calendar-picker-indicator {
 }
 
 .notice {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
   margin: 16px 0;
   padding: 12px 16px;
   border: 1px solid var(--line-strong);
-  border-left-width: 3px;
   border-radius: var(--r-control);
   background: var(--surface);
   font-size: 14.5px;
 }
 
+/* Тон сообщения — маленькая точка-индикатор, без цветной полосы сбоку */
+.notice::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone, var(--planned));
+  transform: translateY(-1px);
+}
+
 .notice--info {
-  border-left-color: var(--planned);
+  --tone: var(--planned);
 }
 
 .notice--error {
-  border-left-color: var(--heart);
+  --tone: var(--heart);
+  border-color: rgba(255, 71, 87, 0.35);
 }
 
 .notice--success {
-  border-left-color: var(--watched);
+  --tone: var(--watched);
 }
 
 .notice a {
@@ -1693,28 +1757,99 @@ input[type='date']::-webkit-calendar-picker-indicator {
 
 /* ---------- Правила и 404 ---------- */
 
-.rules-grid {
+/* ---------- Правила: оглавление сбоку и разделы ---------- */
+.rules-layout {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 20px;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
 }
 
-.rules-card ul {
+.rules-toc {
+  position: sticky;
+  top: calc(var(--header-h) + 24px);
+  display: grid;
+  gap: 4px;
+}
+
+.rules-toc a {
+  padding: 7px 0;
+  color: var(--muted);
+  font-size: 14.5px;
+  text-decoration: none;
+}
+
+.rules-toc a:hover {
+  color: var(--text);
+}
+
+.rules-body {
+  max-width: 68ch;
+}
+
+.rules-section {
+  padding: 26px 0;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: calc(var(--header-h) + 16px);
+}
+
+.rules-section:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.rules-section h2 {
+  margin: 0 0 12px;
+  font-size: 21px;
+}
+
+.rules-section p,
+.rules-section li {
+  color: rgba(245, 244, 240, 0.86);
+  line-height: 1.65;
+}
+
+.rules-section p + p,
+.rules-section ul + p,
+.rules-section p + ul {
+  margin-top: 10px;
+}
+
+.rules-section ul {
   margin: 0;
   padding-left: 20px;
-  color: rgba(245, 244, 240, 0.88);
 }
 
-.rules-card li + li {
-  margin-top: 8px;
+.rules-section li + li {
+  margin-top: 6px;
 }
 
-.rules-card--ok h2 {
-  color: var(--watched);
+.rules-contact {
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
 }
 
-.rules-card--no h2 {
-  color: #ff8f9a;
+@media (max-width: 900px) {
+  .rules-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .rules-toc {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+  }
+}
+
+.site-footer__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 650;
 }
 
 .panel p + h2 {
@@ -1883,10 +2018,6 @@ input[type='date']::-webkit-calendar-picker-indicator {
 
   .chart-grid,
   .profile-grid,
-  .rules-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .auth-page {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -2231,77 +2362,28 @@ input[type='date']::-webkit-calendar-picker-indicator {
   opacity: 0.45;
 }
 
-/* ---------- Фон-атмосфера: три размытых пятна ----------
-   Размытие нарисовано радиальными градиентами, а не фильтром blur — это дёшево для видеокарты.
-   Пятна медленно дрейфуют (только transform), при «уменьшить движение» стоят на месте. */
+/* ---------- Фон: свет от постера ----------
+   Один неподвижный мягкий свет сверху страницы в цвете постера — как от экрана в тёмном зале.
+   Без дрейфующих пятен и зерна; на страницах без постера фон остаётся чистым чёрным. */
 .ambient {
   position: fixed;
-  inset: 0;
+  inset: 0 0 auto;
   z-index: 0;
-  overflow: hidden;
+  height: min(78vh, 760px);
+  background:
+    radial-gradient(70% 90% at 22% -12%, color-mix(in oklab, var(--amb-1) 42%, transparent), transparent 70%),
+    radial-gradient(60% 80% at 82% -18%, color-mix(in oklab, var(--amb-2) 30%, transparent), transparent 72%);
   pointer-events: none;
 }
 
-.ambient i {
-  position: absolute;
-  width: 78vmax;
-  height: 78vmax;
-  border-radius: 50%;
-  opacity: 0.5;
-  will-change: transform;
-}
-
-.ambient i:nth-child(1) {
-  top: -34vmax;
-  left: -26vmax;
-  background: radial-gradient(closest-side, var(--amb-1), transparent);
-  animation: ambient-a 40s ease-in-out infinite alternate;
-}
-
-.ambient i:nth-child(2) {
-  top: -30vmax;
-  right: -30vmax;
-  background: radial-gradient(closest-side, var(--amb-2), transparent);
-  animation: ambient-b 48s ease-in-out infinite alternate;
-}
-
-.ambient i:nth-child(3) {
-  bottom: -42vmax;
-  left: 12vmax;
-  background: radial-gradient(closest-side, var(--amb-3), transparent);
-  animation: ambient-c 56s ease-in-out infinite alternate;
-}
-
-/* Лёгкое зерно убирает «ступеньки» градиента на тёмном фоне */
-.ambient::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.045;
-}
-
-@keyframes ambient-a {
-  to {
-    transform: translate(10vmax, 7vmax) scale(1.08);
+/* На телефонах цвет меняется сразу: плавная смена перерисовывает весь экран каждый кадр */
+@media (max-width: 640px), (pointer: coarse) {
+  :root {
+    transition: none;
   }
-}
 
-@keyframes ambient-b {
-  to {
-    transform: translate(-9vmax, 9vmax) scale(0.94);
-  }
-}
-
-@keyframes ambient-c {
-  to {
-    transform: translate(8vmax, -8vmax) scale(1.1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ambient i {
-    animation: none;
+  .hero-glow {
+    filter: blur(36px) saturate(1.5);
   }
 }
 
@@ -2562,4 +2644,50 @@ input[type='date']::-webkit-calendar-picker-indicator {
   .movie-grid--stagger > * {
     animation: none;
   }
+}
+
+/* Мини-окно на телефонах и планшетах: без размытия фона — оно дорогое для мобильной видеокарты */
+@media (max-width: 640px), (pointer: coarse) {
+  .qv__backdrop {
+    background: rgba(0, 0, 0, 0.78);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .qv__panel {
+    will-change: transform, opacity;
+  }
+}
+
+/* ---------- Фото профиля ---------- */
+.avatar--photo {
+  object-fit: cover;
+  background: var(--surface-2);
+}
+
+.photo-picker {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 6px 0 18px;
+}
+
+.photo-picker > div {
+  display: grid;
+  gap: 8px;
+}
+
+.photo-picker__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.photo-picker label.btn {
+  cursor: pointer;
+}
+
+.photo-picker .is-busy {
+  opacity: 0.6;
+  pointer-events: none;
 }

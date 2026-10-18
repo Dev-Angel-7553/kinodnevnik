@@ -190,7 +190,7 @@ def movie_reviews(movie_id: int, db: Session = Depends(get_db)):
     ).all()
     return [
         ReviewOut(user_name=f"{u.first_name} {u.last_name[0]}.", login=u.login,
-                  avatar_color=u.avatar_color, rating=e.rating, review=e.review,
+                  avatar_color=u.avatar_color, avatar_url=u.avatar_url, rating=e.rating, review=e.review,
                   watched_at=e.watched_at)
         for e, u in rows
     ]

@@ -184,8 +184,11 @@ function MobileChrome() {
   );
 }
 
+const YEAR = new Date().getFullYear();
+
 function Footer() {
-  // В публичном демо данные периодически сбрасываются — предупреждаем об этом в подвале
+  const { user } = useAuth();
+  // В публичном демо данные периодически сбрасываются — сервер сообщает об этом в /api/health
   const [reset, setReset] = useState(0);
   useEffect(() => {
     API.health()
@@ -195,17 +198,38 @@ function Footer() {
   return (
     <footer className="site-footer">
       <div className="container">
-        <div className="site-footer__inner">
-          <span>
-            КиноДневник, учебный проект 2026. Постеры и описания: TMDB, ПоискКино, OMDb, Википедия, iTunes.
-            {reset > 0 && ` Это демо: данные сбрасываются каждые ${reset} минут.`}
-          </span>
-          <span className="site-footer__links">
-            <Link to="/rules">Правила</Link>
+        <div className="site-footer__grid">
+          <div className="site-footer__brand">
+            <span className="site-footer__logo">
+              <Logo /> КиноДневник
+            </span>
+            <p>Личный дневник просмотренных фильмов: оценки, рецензии, список на вечер и статистика за год.</p>
+          </div>
+          <nav aria-label="Разделы">
+            <h2>Разделы</h2>
+            <Link to="/">Главная</Link>
+            <Link to="/search">Поиск фильмов</Link>
+            {user ? <Link to="/library">Мой дневник</Link> : <Link to="/register">Создать дневник</Link>}
+            {user ? <Link to="/stats">Статистика</Link> : <Link to="/login">Войти</Link>}
+          </nav>
+          <nav aria-label="О проекте">
+            <h2>О проекте</h2>
+            <Link to="/rules">Правила и данные</Link>
             <a href="/docs" target="_blank" rel="noreferrer">
               Документация API
             </a>
-          </span>
+            <a href="https://github.com/Dev-Angel-7553/kinodnevnik" target="_blank" rel="noreferrer">
+              Исходный код
+            </a>
+          </nav>
+          <div>
+            <h2>Данные о фильмах</h2>
+            <p>Кинопоиск через ПоискКино, IMDb через OMDb, Википедия и iTunes. Постеры принадлежат правообладателям.</p>
+          </div>
+        </div>
+        <div className="site-footer__bottom">
+          <span>© {YEAR} КиноДневник. Курсовой проект по МДК 09.01.</span>
+          {reset > 0 && <span>Демо-версия: данные возвращаются к исходным каждые {reset} минут.</span>}
         </div>
       </div>
     </footer>
@@ -232,11 +256,7 @@ export default function Layout() {
   return (
     <QuickViewProvider>
       {/* Фон: три размытых приглушённых пятна; на странице фильма — в цветах его постера */}
-      <div className="ambient" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-      </div>
+      <div className="ambient" aria-hidden="true" />
       {/* Искры при клике — короткий отклик на любое нажатие */}
       <ClickSpark sparkColor={['#ffc61a', '#f5f4f0']} sparkSize={9} sparkRadius={20} sparkCount={8} duration={420}>
         <div className="app-shell">

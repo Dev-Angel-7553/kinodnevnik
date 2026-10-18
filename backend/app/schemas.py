@@ -79,6 +79,7 @@ class UserOut(BaseModel):
     email: str
     role: str
     avatar_color: str
+    avatar_url: str | None = None
     created_at: datetime
 
     @field_validator("role", mode="before")
@@ -173,6 +174,7 @@ class ReviewOut(BaseModel):
     user_name: str
     login: str
     avatar_color: str
+    avatar_url: str | None = None
     rating: int | None
     review: str
     watched_at: date | None
@@ -314,3 +316,8 @@ class DeletedLogOut(BaseModel):
     reason: str
     deleted_by: str
     deleted_at: datetime
+
+
+class AvatarIn(BaseModel):
+    """Фото профиля в виде data URL (клиент заранее обрезает его до квадрата и сжимает)."""
+    image: str = Field(min_length=30, max_length=420_000)

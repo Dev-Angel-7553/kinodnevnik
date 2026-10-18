@@ -30,7 +30,7 @@ npm start          # или двойной щелчок по start.bat (Windows)
 
 ```bash
 npm run setup      # только установить зависимости
-npm test           # 22 автотеста сервера (pytest)
+npm test           # 24 автотеста сервера (pytest)
 npm run reset-db   # пересоздать базу с демонстрационными данными
 npm run build      # собрать клиент в frontend/dist — тогда всё приложение открывается на :8000
 ```

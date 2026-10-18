@@ -230,10 +230,24 @@ def only_demo_accounts(db) -> bool:
     return set(db.scalars(select(User.login))) <= demo_logins
 
 
+def add_missing_columns() -> None:
+    """Добавляет в старую базу столбцы, появившиеся в новых версиях (фото профиля)."""
+    from sqlalchemy import inspect
+
+    existing = {c["name"] for c in inspect(engine).get_columns("users")}
+    blob = "BYTEA" if engine.dialect.name == "postgresql" else "BLOB"
+    added = {"avatar": blob, "avatar_type": "VARCHAR(20)", "avatar_version": "INTEGER NOT NULL DEFAULT 0"}
+    with engine.begin() as conn:
+        for name, ddl in added.items():
+            if name not in existing:
+                conn.execute(text(f"ALTER TABLE users ADD COLUMN {name} {ddl}"))
+
+
 def init_db(reset: bool = False) -> None:
     if reset:
         Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
+    add_missing_columns()
     with SessionLocal() as db:
         if not db.scalar(select(func.count()).select_from(Role)):
             seed(db)

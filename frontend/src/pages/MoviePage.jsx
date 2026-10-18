@@ -397,7 +397,7 @@ export default function MoviePage() {
           <div className="review-list">
             {reviews.map((r, i) => (
               <article key={i} className="review">
-                <Avatar user={{ first_name: r.user_name, last_name: r.user_name.split(' ')[1], avatar_color: r.avatar_color }} size={36} />
+                <Avatar user={{ first_name: r.user_name, last_name: r.user_name.split(' ')[1], avatar_color: r.avatar_color, avatar_url: r.avatar_url }} size={36} />
                 <div>
                   <header>
                     <b>{r.user_name}</b>

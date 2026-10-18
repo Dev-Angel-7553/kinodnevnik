@@ -12,6 +12,20 @@ import { formatDateTime, SOURCES } from '../utils';
 
 const COLORS = ['#e8a87c', '#9cc5a1', '#8fb3e8', '#e3c567', '#c9a3d9', '#d98c8c'];
 
+// Фото обрезается до квадрата по центру и сжимается до 256×256 JPEG прямо в браузере —
+// на сервер уходит картинка в 15–30 КБ, а не исходник с телефона на несколько мегабайт
+async function squarePhoto(file, size = 256) {
+  const bitmap = await createImageBitmap(file);
+  const side = Math.min(bitmap.width, bitmap.height);
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, size, size);
+  bitmap.close?.();
+  return canvas.toDataURL('image/jpeg', 0.86);
+}
+
 export default function Profile() {
   const { user, setUser, logout } = useAuth();
   const notify = useToast();
@@ -28,6 +42,7 @@ export default function Profile() {
   const [history, setHistory] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [stats, setStats] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     API.history().then(setHistory).catch(() => {});
@@ -48,6 +63,30 @@ export default function Profile() {
       setErrors(err.fields || {});
       notify('Проверьте поля формы', { tone: 'error', description: err.message });
     }
+  };
+
+  const pickPhoto = async e => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      notify('Это не картинка', { tone: 'error', description: 'Выберите фото в формате JPG, PNG или WebP' });
+      return;
+    }
+    setUploading(true);
+    try {
+      setUser(await API.uploadAvatar(await squarePhoto(file)));
+      notify('Фото профиля обновлено');
+    } catch (err) {
+      notify('Не удалось загрузить фото', { tone: 'error', description: err.message || 'Формат не поддерживается' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removePhoto = async () => {
+    setUser(await API.deleteAvatar());
+    notify('Фото удалено', { tone: 'info' });
   };
 
   const clearHistory = async () => {
@@ -114,8 +153,26 @@ export default function Profile() {
                 <input type="email" value={form.email} onChange={e => set('email', e.target.value)} />
               </Field>
             </div>
+            <div className="photo-picker">
+              <Avatar user={{ ...user, avatar_color: form.avatar_color }} size={56} />
+              <div>
+                <span className="field__label">Фото профиля</span>
+                <div className="photo-picker__actions">
+                  <label className={`btn btn-sm ${uploading ? 'is-busy' : ''}`}>
+                    {uploading ? 'Загружаем…' : user.avatar_url ? 'Заменить фото' : 'Загрузить фото'}
+                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={pickPhoto} disabled={uploading} hidden />
+                  </label>
+                  {user.avatar_url && (
+                    <button type="button" className="btn btn-sm btn-ghost" onClick={removePhoto}>
+                      Удалить
+                    </button>
+                  )}
+                </div>
+                <small className="muted">JPG, PNG или WebP. Фото обрежется до квадрата.</small>
+              </div>
+            </div>
             <div className="color-picker">
-              <span className="field__label">Цвет аватара</span>
+              <span className="field__label">{user.avatar_url ? 'Цвет, если фото не загрузится' : 'Цвет аватара'}</span>
               {COLORS.map(c => (
                 <button
                   key={c}

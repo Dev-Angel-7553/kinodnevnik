@@ -3,9 +3,9 @@ from datetime import date, datetime
 
 from sqlalchemy import (
     Boolean, CheckConstraint, Column, Date, DateTime, Float, ForeignKey,
-    Integer, String, Table, Text, UniqueConstraint, func,
+    Integer, LargeBinary, String, Table, Text, UniqueConstraint, func,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, deferred, mapped_column, relationship
 
 from .database import Base
 
@@ -44,6 +44,15 @@ class User(Base):
     avatar_color: Mapped[str] = mapped_column(String(7), default="#e3c567")
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime)
+    # Фото профиля: сжатая картинка (до 300 КБ) и её тип; версия меняется при каждой загрузке,
+    # чтобы браузер не показывал старое фото из кэша. Сама картинка загружается только по запросу.
+    avatar: Mapped[bytes | None] = deferred(mapped_column(LargeBinary))
+    avatar_type: Mapped[str | None] = mapped_column(String(20))
+    avatar_version: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+
+    @property
+    def avatar_url(self) -> str | None:
+        return f"/api/users/{self.id}/avatar?v={self.avatar_version}" if self.avatar_version else None
 
     role: Mapped[Role] = relationship(back_populates="users", lazy="joined")
     entries: Mapped[list["UserMovie"]] = relationship(
