@@ -35,7 +35,6 @@ export default function Profile() {
     last_name: user.last_name,
     first_name: user.first_name,
     middle_name: user.middle_name || '',
-    email: user.email,
     avatar_color: user.avatar_color,
   });
   const [errors, setErrors] = useState({});
@@ -149,9 +148,6 @@ export default function Profile() {
               <Field label="Отчество" error={errors.middle_name} hint="Необязательно">
                 <input value={form.middle_name} onChange={e => set('middle_name', e.target.value)} />
               </Field>
-              <Field label="Email" error={errors.email}>
-                <input type="email" value={form.email} onChange={e => set('email', e.target.value)} />
-              </Field>
             </div>
             <div className="photo-picker">
               <Avatar user={{ ...user, avatar_color: form.avatar_color }} size={56} />
@@ -189,7 +185,7 @@ export default function Profile() {
             </button>
           </form>
           <p className="muted small" style={{ marginTop: 14 }}>
-            Email для связи: {user.email}. Аккаунт может быть удалён администратором при нарушении{' '}
+            Аккаунт может быть удалён администратором при нарушении{' '}
             <Link to="/rules">правил сервиса</Link>.
           </p>
         </div>

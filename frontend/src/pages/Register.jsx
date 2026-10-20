@@ -11,11 +11,11 @@ import { AuthScene } from './Login';
 // Поля каждого шага — чтобы при ошибке сервера открыть нужный шаг
 const STEP_FIELDS = [
   ['last_name', 'first_name', 'middle_name'],
-  ['login', 'email'],
+  ['login'],
   ['password', 'password_confirm'],
 ];
 
-const EMPTY = { last_name: '', first_name: '', middle_name: '', login: '', email: '', password: '', password_confirm: '' };
+const EMPTY = { last_name: '', first_name: '', middle_name: '', login: '', password: '', password_confirm: '' };
 
 // Проверка на клиенте повторяет правила сервера; окончательная проверка — на сервере
 function validate(form, fields) {
@@ -25,7 +25,6 @@ function validate(form, fields) {
   need('first_name', RULES.name.test(form.first_name.trim()), 'Только буквы и дефис, от 2 символов');
   need('middle_name', !form.middle_name.trim() || RULES.name.test(form.middle_name.trim()), 'Только буквы и дефис');
   need('login', RULES.login.test(form.login), 'Латиница, цифры и «_», от 3 до 32 символов');
-  need('email', RULES.email.test(form.email.trim()), 'Введите email в формате name@example.ru');
   need('password', RULES.password.test(form.password), 'Минимум 8 символов, буква и цифра');
   need('password_confirm', form.password_confirm && form.password === form.password_confirm, 'Пароли не совпадают');
   return errors;
@@ -114,7 +113,6 @@ export default function Register() {
                 <Field label="Логин *" error={errors.login} hint="Например: kino_lover">
                   {input('login', { autoComplete: 'username' })}
                 </Field>
-                <Field label="Email *" error={errors.email}>{input('email', { type: 'email', autoComplete: 'email' })}</Field>
               </div>
             </Step>
             <Step title="Пароль">

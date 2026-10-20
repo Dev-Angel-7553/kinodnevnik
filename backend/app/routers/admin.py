@@ -51,7 +51,7 @@ def delete_user(user_id: int, data: DeleteUserIn,
     if user.role.code == "admin":
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Нельзя удалить другого администратора")
 
-    log = DeletedUserLog(user_id=user.id, login=user.login, email=user.email,
+    log = DeletedUserLog(user_id=user.id, login=user.login,
                          reason=data.reason.strip(), deleted_by=admin.login)
     db.add(log)
     db.delete(user)

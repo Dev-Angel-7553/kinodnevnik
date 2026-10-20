@@ -76,8 +76,6 @@ async def validation_handler(_request: Request, exc: RequestValidationError):
         message = error.get("msg", "")
         if error["type"] == "value_error":
             message = message.removeprefix("Value error, ")
-            if "email" in message.lower() and field == "email":
-                message = "Некорректный адрес email"
         else:
             message = MESSAGES.get(error["type"], message)
         fields.setdefault(field, message)

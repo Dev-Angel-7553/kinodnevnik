@@ -3,7 +3,7 @@ import re
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_serializer, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator, model_validator
 
 from .services.posters import for_movie_url, proxied
 
@@ -21,7 +21,6 @@ class RegisterIn(BaseModel):
     first_name: str
     middle_name: str | None = None
     login: str
-    email: EmailStr
     password: str
     password_confirm: str
 
@@ -76,7 +75,6 @@ class UserOut(BaseModel):
     first_name: str
     middle_name: str | None
     login: str
-    email: str
     role: str
     avatar_color: str
     avatar_url: str | None = None
@@ -92,7 +90,6 @@ class UserUpdate(BaseModel):
     last_name: str | None = None
     first_name: str | None = None
     middle_name: str | None = None
-    email: EmailStr | None = None
     avatar_color: str | None = Field(default=None, pattern=r"^#[0-9a-fA-F]{6}$")
 
     @field_validator("last_name", "first_name", "middle_name")
@@ -312,7 +309,6 @@ class DeletedLogOut(BaseModel):
     id: int
     user_id: int
     login: str
-    email: str
     reason: str
     deleted_by: str
     deleted_at: datetime

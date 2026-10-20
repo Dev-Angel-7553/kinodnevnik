@@ -30,8 +30,6 @@ def register(data: RegisterIn, db: Session = Depends(get_db)):
     fields = {}
     if db.scalar(select(User.id).where(func.lower(User.login) == data.login.lower())):
         fields["login"] = "Этот логин уже занят"
-    if db.scalar(select(User.id).where(func.lower(User.email) == data.email.lower())):
-        fields["email"] = "Этот email уже зарегистрирован"
     if fields:
         raise HTTPException(status.HTTP_409_CONFLICT,
                             detail={"message": "Пользователь уже существует", "fields": fields})
@@ -42,7 +40,6 @@ def register(data: RegisterIn, db: Session = Depends(get_db)):
         first_name=data.first_name,
         middle_name=data.middle_name,
         login=data.login,
-        email=data.email.lower(),
         password_hash=hash_password(data.password),
         role=role,
         avatar_color=random.choice(AVATAR_COLORS),

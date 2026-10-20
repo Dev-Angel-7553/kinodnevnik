@@ -3,7 +3,7 @@ import base64
 import binascii
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from ..database import get_db
@@ -17,13 +17,6 @@ router = APIRouter(prefix="/api/users", tags=["Профиль"])
 @router.patch("/me", response_model=UserOut)
 def update_me(data: UserUpdate, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     changes = data.model_dump(exclude_unset=True, exclude_none=True)
-    if "email" in changes:
-        changes["email"] = changes["email"].lower()
-        taken = db.scalar(select(User.id).where(func.lower(User.email) == changes["email"],
-                                                User.id != user.id))
-        if taken:
-            raise HTTPException(status.HTTP_409_CONFLICT,
-                                detail={"message": "Email занят", "fields": {"email": "Этот email уже зарегистрирован"}})
     for field, value in changes.items():
         setattr(user, field, value)
     db.commit()

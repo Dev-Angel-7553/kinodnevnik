@@ -42,31 +42,31 @@ def auth(client, login="demo", password="demo2026"):
 def test_register_success(client):
     r = client.post("/api/auth/register", json={
         "last_name": "Тестов", "first_name": "Иван", "login": "tester_1",
-        "email": "tester@example.ru", "password": "secret123", "password_confirm": "secret123"})
+        "password": "secret123", "password_confirm": "secret123"})
     assert r.status_code == 201
     assert r.json()["user"]["role"] == "user"
 
 
 def test_register_validation_errors(client):
     r = client.post("/api/auth/register", json={
-        "last_name": "Т3", "first_name": "Иван", "login": "a b", "email": "bad",
+        "last_name": "Т3", "first_name": "Иван", "login": "a b",
         "password": "123", "password_confirm": "123"})
     fields = r.json()["detail"]["fields"]
     assert r.status_code == 422
-    assert {"last_name", "login", "email", "password"} <= fields.keys()
+    assert {"last_name", "login", "password"} <= fields.keys()
 
 
 def test_register_password_mismatch(client):
     r = client.post("/api/auth/register", json={
         "last_name": "Тестов", "first_name": "Иван", "login": "tester_2",
-        "email": "t2@example.ru", "password": "secret123", "password_confirm": "secret124"})
+        "password": "secret123", "password_confirm": "secret124"})
     assert r.json()["detail"]["fields"]["password_confirm"] == "Пароли не совпадают"
 
 
 def test_register_duplicate_login(client):
     r = client.post("/api/auth/register", json={
         "last_name": "Тестов", "first_name": "Иван", "login": "demo",
-        "email": "new@example.ru", "password": "secret123", "password_confirm": "secret123"})
+        "password": "secret123", "password_confirm": "secret123"})
     assert r.status_code == 409
     assert "login" in r.json()["detail"]["fields"]
 
@@ -308,7 +308,7 @@ def test_demo_reset_every_n_minutes(client, monkeypatch):
     monkeypatch.setattr(settings, "demo_reset_minutes", 30)
     client.post("/api/auth/register", json={
         "last_name": "Временный", "first_name": "Гость", "login": "temp_guest",
-        "email": "temp@example.ru", "password": "secret123", "password_confirm": "secret123"})
+        "password": "secret123", "password_confirm": "secret123"})
     assert demo_reset.maybe_reset(force_check=True) is False  # 30 минут ещё не прошло
     with SessionLocal() as db:  # «перематываем» время заполнения на 31 минуту назад
         row = db.scalar(select(demo_reset.ApiCache).where(demo_reset.ApiCache.cache_key == demo_reset.KEY))

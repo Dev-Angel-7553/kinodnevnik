@@ -126,7 +126,6 @@ export default function Admin() {
               <tr>
                 <th>Пользователь</th>
                 <th>Логин</th>
-                <th>Email</th>
                 <th>Роль</th>
                 <th>Фильмов</th>
                 <th>Регистрация</th>
@@ -144,7 +143,6 @@ export default function Admin() {
                     </span>
                   </td>
                   <td>{u.login}</td>
-                  <td>{u.email}</td>
                   <td>
                     <span className={`role-chip role-chip--${u.role}`}>{u.role === 'admin' ? 'admin' : 'user'}</span>
                   </td>
@@ -184,7 +182,6 @@ export default function Admin() {
                 <tr>
                   <th>Дата</th>
                   <th>Логин</th>
-                  <th>Email</th>
                   <th>Причина</th>
                   <th>Удалил</th>
                 </tr>
@@ -194,7 +191,6 @@ export default function Admin() {
                   <tr key={row.id}>
                     <td>{formatDateTime(row.deleted_at)}</td>
                     <td>{row.login}</td>
-                    <td>{row.email}</td>
                     <td>{row.reason}</td>
                     <td>{row.deleted_by}</td>
                   </tr>

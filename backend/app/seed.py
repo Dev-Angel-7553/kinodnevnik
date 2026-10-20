@@ -65,7 +65,7 @@ DEMO_DIARY = [
     ("tt0338013", "planned", None, None, False, 45),
 ]
 
-SEED_VERSION = 4  # 4: рейтинги Кинопоиска в каталоге
+SEED_VERSION = 5  # 5: без email; 4: рейтинги Кинопоиска в каталоге
 
 # Рецензии других зрителей подбираются по оценке, чтобы текст не спорил с числом
 REVIEWS_BY_MOOD = {
@@ -168,7 +168,7 @@ def seed(db) -> None:
     for i, (login, password, last, first, role, color) in enumerate(USERS):
         created = datetime.now() - timedelta(days=380 - i * 37, hours=rnd.randint(0, 20))
         user = User(login=login, password_hash=demo_hash(password), last_name=last,
-                    first_name=first, email=f"{login}@kinodnevnik.ru", role=roles[role],
+                    first_name=first, role=roles[role],
                     avatar_color=color, created_at=created,
                     last_login_at=datetime.now() - timedelta(days=rnd.randint(0, 20)))
         db.add(user)
@@ -205,7 +205,7 @@ def seed(db) -> None:
                              results_count=rnd.randint(1, 6),
                              searched_at=datetime.now() - timedelta(days=i * 4, hours=i)))
 
-    db.add(DeletedUserLog(user_id=99, login="free_movies_hd", email="free_movies_hd@mail.ru",
+    db.add(DeletedUserLog(user_id=99, login="free_movies_hd",
                           reason="Рассылка ссылок на пиратские сайты в рецензиях",
                           deleted_by="admin", deleted_at=datetime.now() - timedelta(days=24)))
     mark_seeded(db)
@@ -241,6 +241,14 @@ def add_missing_columns() -> None:
         for name, ddl in added.items():
             if name not in existing:
                 conn.execute(text(f"ALTER TABLE users ADD COLUMN {name} {ddl}"))
+    # Email больше не собирается: в старой базе столбец убираем, иначе новые записи не сохранятся
+    for table in ("deleted_users_log", "users"):
+        if "email" in {c["name"] for c in inspect(engine).get_columns(table)}:
+            try:
+                with engine.begin() as conn:
+                    conn.execute(text(f"ALTER TABLE {table} DROP COLUMN email"))
+            except Exception:
+                print(f"Не удалось убрать столбец email из {table}: выполните npm run reset-db")
 
 
 def init_db(reset: bool = False) -> None:

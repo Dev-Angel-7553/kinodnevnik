@@ -19,7 +19,6 @@ export const SOURCES = {
 export const RULES = {
   name: /^[A-Za-zА-Яа-яЁё][A-Za-zА-Яа-яЁё-]{1,49}$/,
   login: /^[A-Za-z0-9_]{3,32}$/,
-  email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
   password: /^(?=.*[A-Za-zА-Яа-я])(?=.*\d).{8,64}$/,
 };
 
